@@ -1,0 +1,10 @@
+/home/sam/infoapp/ai/workspace/sam/martservice/src/main/java/com/mart/MartserviceApplication.java
+/home/sam/infoapp/ai/workspace/sam/martservice/src/main/java/com/mart/entity/Location.java
+/home/sam/infoapp/ai/workspace/sam/martservice/src/main/java/com/mart/entity/Order.java
+/home/sam/infoapp/ai/workspace/sam/martservice/src/main/java/com/mart/entity/Product.java
+/home/sam/infoapp/ai/workspace/sam/martservice/src/main/java/com/mart/entity/Role.java
+/home/sam/infoapp/ai/workspace/sam/martservice/src/main/java/com/mart/entity/UserDetail.java
+/home/sam/infoapp/ai/workspace/sam/martservice/src/main/java/com/mart/repository/LocationRepository.java
+/home/sam/infoapp/ai/workspace/sam/martservice/src/main/java/com/mart/repository/OrderRepository.java
+/home/sam/infoapp/ai/workspace/sam/martservice/src/main/java/com/mart/repository/ProductRepository.java
+/home/sam/infoapp/ai/workspace/sam/martservice/src/main/java/com/mart/repository/UserDetailRepository.java
