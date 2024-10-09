@@ -27,7 +27,8 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/v1/user/verifyUserName",
                     "/api/v1/user/getotpToPhone",
-                    "/api/v1/user/login"
+                    "/api/v1/user/login",
+                    "/api/v1/user/verifyUsernameAndGenerateOtp"
                     
       
                 )

@@ -50,8 +50,8 @@ public class UserController {
 	}
 	
 	
-	@PostMapping("/login")
-	public ResponseEntity<Object> login(@RequestBody LoginDto loginDto, HttpServletResponse response) throws Exception {
+	@PostMapping("/loginn")
+	public ResponseEntity<Object> loginn(@RequestBody LoginDto loginDto, HttpServletResponse response) throws Exception {
 	  
 		UserDetail userDetail = userDetailService.verifyLoginUserDetail(loginDto);	
 		
@@ -70,16 +70,31 @@ public class UserController {
 	}
 
 	
+	@PostMapping("/verifyUsernameAndGenerateOtp")
+	public ResponseEntity<Object> verifyUsernameAndGenerateOtp(@RequestBody LoginDto loginDto, HttpServletResponse response) throws Exception{		
+		return new ResponseEntity<Object>(userDetailService.verifyUsernameAndGenerateOtp(loginDto, response), HttpStatus.OK);
+		
+	}
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
+
+	@PostMapping("/login")
+	public ResponseEntity<Object> login(@RequestBody LoginDto loginDto, HttpServletResponse response) throws Exception{		
+		UserDetail userDetail = userDetailService.verifyLoginCredential(loginDto,response);	
+		String token =  jwtUtil.createToken(userDetail.getUserName());
+		 
+		response.setHeader("Authorization", "Bearer " + token);    		
+	    HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
+        
+        loginDto.setUserId(userDetail.getUserId());
+	    loginDto.setEmailId(userDetail.getEmailId());
+	    loginDto.setRole(userDetail.getRole());
+	    loginDto.setPassword("");
+        
+	    return new ResponseEntity<>(loginDto, headers,HttpStatus.OK);
+		
+	}
 	
 	
 	

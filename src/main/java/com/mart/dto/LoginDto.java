@@ -16,7 +16,7 @@ public class LoginDto {
 	
 	private Long phone;
 	
-	private Long phoneOTP;
+	private int phoneOTP;
 
 	
 	private String password;
