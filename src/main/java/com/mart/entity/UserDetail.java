@@ -27,7 +27,7 @@ public class UserDetail {
 
 //	@NotBlank(message = "Name is mandatory")
 //	@Size(max = 100, message = "Name must be less than 100 characters") 
-	@Column(name = "user_name", length = 100 , nullable = true)         
+	@Column(name = "user_name", length = 100 ,  unique = true, nullable = true)         
 	private String userName;
 
 	@Column(name = "name", length = 100 , nullable = true)         
