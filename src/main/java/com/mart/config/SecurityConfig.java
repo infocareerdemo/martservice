@@ -25,21 +25,11 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(req -> req
                 .requestMatchers(
-                    "/api/v1/user/reg",
-                    "/api/v1/user/login",
-                    "/api/v1/user/otpToMail",
-                    "/api/v1/user/verifyMail",
-                    "/api/v1/user/otpToPhone",
-                    "/api/v1/user/verifyPhone",
+                    "/api/v1/user/verifyUserName",
+                    "/api/v1/user/getotpToPhone",
+                    "/api/v1/user/login"
                     
-                    "/api/v1/user/otpForgotPwd",
-                    "/api/v1/user/forgotPassword",
-					"/api/v1/location/allLocation",
-                    
-                    "/actuator/**",
-                    "/v3/api-docs/**", 
-					 "/swagger-ui/**",
-                    "/common/**"
+      
                 )
                 .permitAll()
                 .anyRequest().authenticated())
