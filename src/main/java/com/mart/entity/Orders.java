@@ -16,7 +16,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "orders") // Specify the table name
-public class Order {
+public class Orders {
 
 	// it just id, not used in any table reference
 	@Id
@@ -58,5 +58,14 @@ public class Order {
 	
 	@Column(name = "ordered_date_time", nullable = false)
 	private LocalDateTime orderedDateTime;
+	
+	@Column(name = "wallet_amount")
+	private double walletAmount;
+	
+	@Column(name = "cash_amount")
+	private double cashAmount;
+	
+	@Column(name = "razorpay_amount")
+	private double razorpayAmount;
 	
 }

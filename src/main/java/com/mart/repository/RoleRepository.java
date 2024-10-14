@@ -9,8 +9,5 @@ import com.mart.entity.Role;
 
 public interface RoleRepository extends JpaRepository<Role, Long> {
 	
-	
-	
-	@Override
 	Optional<Role> findById(Long id);
 }

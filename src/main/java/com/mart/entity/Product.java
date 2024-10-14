@@ -51,7 +51,7 @@ public class Product {
 	private boolean productActive;
 	
 	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "Prodcut_location", referencedColumnName = "location_id", nullable = false)
+	@JoinColumn(name = "prodcut_location", referencedColumnName = "location_id", nullable = false)
 	private Location location;
 	
 	@Column(name = "product_image")

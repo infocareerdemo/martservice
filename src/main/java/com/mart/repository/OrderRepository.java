@@ -1,20 +1,19 @@
 package com.mart.repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.mart.entity.Order;
+import com.mart.entity.Orders;
 
 
 
-public interface OrderRepository extends JpaRepository<Order, Long> {
-//
-//	Orders findByOrderId(String oid);
-//
-//	List<Order> findByUserLoginUserId(Long id);
-//
-//	List<Orders> findByOrderedDateTimeBetweenAndLocationLocationId(LocalDateTime startOfDay, LocalDateTime endOfDay,
-//			Long locationId);
-//
-//	List<Order> findByOrderedDateTimeBetween(LocalDateTime startOfDay, LocalDateTime endOfDay);
+public interface OrderRepository extends JpaRepository<Orders, Long> {
 
+	Orders findByOrderId(String oid);
+
+	List<Orders> findByOrderedDateTimeBetween(LocalDateTime startOfDay, LocalDateTime endOfDay);
+
+    List<Orders> findByUserDetailUserId(Long userId);
 }
