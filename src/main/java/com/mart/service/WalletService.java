@@ -193,7 +193,7 @@ public class WalletService {
 	    }
 
 	    WalletSummary walletSummary = new WalletSummary();
-	    walletSummary.setOrder(order.get());
+	    walletSummary.setOrders(order.get());
 	    walletSummary.setOrderDetails(orderDetails);
 
 	    return walletSummary;

@@ -12,6 +12,6 @@ public class WalletSummary {
 	
 	public List<OrderDetails> orderDetails;
 
-	public Orders order;
+	public Orders orders;
 
 }
