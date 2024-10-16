@@ -1,9 +1,12 @@
 package com.mart.service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -26,8 +29,10 @@ public class ProductService {
 	@Autowired
 	LocationRepository locationRepository;
 
-	public String saveOrUpdateProduct(Product productReq, MultipartFile productImg) throws Exception{		
-		Optional<Location> location = locationRepository.findById(productReq.getLocation().getLocationId());
+	
+	public String saveOrUpdateProduct(Product productReq, MultipartFile productImg) throws Exception{	
+	Long locId =	productReq.getLocation().getLocationId();
+		Optional<Location> location = locationRepository.findById(locId);
 		if(!location.isPresent()) {
 			throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Location not found");
 		}
@@ -48,6 +53,7 @@ public class ProductService {
             if(productImg != null && !productImg.isEmpty()) {
             	product.setProductImage(productImg.getBytes());
             }
+            product.setProductUpdatedBy(productReq.getProductUpdatedBy());
 			product.setUpdatedDate(LocalDateTime.now());
 
             productRepository.save(product);

@@ -6,11 +6,6 @@ import lombok.Data;
 public class WalletResponse {
 	
 
-	private double amount;         
-    private double remainingAmount; 
-    private double pendingAmount;
-    
-    private String message;
     private boolean success; 
 	
 

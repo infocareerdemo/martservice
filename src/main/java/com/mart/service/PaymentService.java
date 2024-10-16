@@ -2,6 +2,7 @@ package com.mart.service;
 
 import java.security.SignatureException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -11,13 +12,16 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.mart.dto.OrderSummary;
+import com.mart.entity.OrderDetails;
 import com.mart.entity.Orders;
 import com.mart.entity.RazorPayDetails;
 import com.mart.entity.RazorpayPayment;
 import com.mart.entity.UserDetail;
 import com.mart.exception.ApplicationException;
+import com.mart.repository.OrderDetailsRepository;
 import com.mart.repository.OrderRepository;
 import com.mart.repository.RazorPayDetailsRepository;
 import com.mart.repository.RazorpayPaymentRepository;
@@ -48,48 +52,61 @@ public class PaymentService {
 	@Autowired
 	OrderService orderService;
 	
-	
-	private static final String SECRET_ID = "rzp_test_fvYUjpmIHqB5nx";
 
-	private static final String SECRET_KEY = "j7d8lkf1RqAs3ni8Ngt4g8bC";
+	@Autowired
+	OrderDetailsRepository orderDetailsRepository;
 	
 	
+	//private static final String SECRET_ID = "rzp_test_fvYUjpmIHqB5nx";
+
+	//private static final String SECRET_KEY = "j7d8lkf1RqAs3ni8Ngt4g8bC";
+	
+	private static final String SECRET_ID = "rzp_test_8xlK20ea4017KA";
+    private static final String SECRET_KEY = "ErQStpcyY98zxGMGrTClEsfy";
 
 	public PaymentService() throws RazorpayException {
 		this.client = new RazorpayClient(SECRET_ID, SECRET_KEY);
 	}
 		    
 	    
-
 	public RazorPayDetails createOrder(Long id, Long oid) throws ApplicationException {
-		Order order = new Order(null);
-		try {
-			Optional<UserDetail> userDetails = userDetailRepository.findById(id);
-			if (userDetails.isPresent()) {
-				Optional<Orders> orders = orderRepository.findById(oid);
-				order = createRazorPayOrder(String.valueOf(orders.get().getTotalAmount()));
-				RazorPayDetails razorPay = getRazorPay((String) order.get("id"), userDetails.get(),
-						orders.get().getTotalAmount(), orders.get());
 
-				return razorPay;
-			} else {
-				throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "Invalid user");
-			}
-		} catch (RazorpayException e) {
-			e.printStackTrace();
-		}
-		if (order.get("id") == null || order.get("id").toString().isEmpty()) {
-			return null;
-		}
-		return null;
+
+	    // Proceed with the order creation logic
+	    Order razorPayOrder = new Order(null);
+	    try {
+	        Optional<UserDetail> userDetails = userDetailRepository.findById(id);
+	        if (userDetails.isPresent()) {
+	            Optional<Orders> orders = orderRepository.findById(oid);
+	            if (orders.isPresent()) {
+	              //  razorPayOrder = createRazorPayOrder(String.valueOf(orders.get().getTotalAmount()));
+	            	 razorPayOrder = createRazorPayOrder(String.valueOf(orders.get().getRazorpayAmount()));
+	       
+	                RazorPayDetails razorPayDetails = getRazorPay((String) razorPayOrder.get("id"), 
+	                                                              userDetails.get(), 
+	                                                              orders.get().getRazorpayAmount(), 
+	                                                              orders.get());
+                    System.out.println("Razor :"+orders.get().getRazorpayAmount() );
+	                return razorPayDetails;
+	            } else {
+	                throw new ApplicationException(HttpStatus.NOT_FOUND, 1002, LocalDateTime.now(), "Order not found");
+	            }
+	        } else {
+	            throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "Invalid user");
+	        }
+	    } catch (RazorpayException e) {
+	        e.printStackTrace();
+	        throw new ApplicationException(HttpStatus.INTERNAL_SERVER_ERROR, 1003, LocalDateTime.now(), 
+	                                       "Error while creating RazorPay order");
+	    }
 	}
-	
-	
 
+	
+	
 	private RazorPayDetails getRazorPay(String orderId, UserDetail userLogin, double amount, Orders orders) {
 		RazorPayDetails razorPayDetails = new RazorPayDetails();
 		razorPayDetails.setApplicationFee(convertRupeeToPaise(String.valueOf(amount)));
-		razorPayDetails.setCustomerContact(userLogin.getPhone());
+		//razorPayDetails.setCustomerName(userLogin.getUserName());
 		//razorPayDetails.setCustomerEmail(userLogin.getEmailId());
 		razorPayDetails.setMerchantName("Test");
 		razorPayDetails.setPurchaseDescription("TEST PURCHASES");
@@ -119,8 +136,7 @@ public class PaymentService {
 		int amt = (int) Math.round(rupeesDouble * 100);
 		return Integer.toString(amt);
 	}
-	
-	
+
 	public OrderSummary isPaymentSuccess(RazorpayPayment razorpayPayment) {
 		try {
 			Optional<Orders> orders = orderRepository.findById(razorpayPayment.getOrders().getId());
@@ -145,9 +161,11 @@ public class PaymentService {
 				razorpayPaymentRepository.save(razorpayPayment);
 
 				OrderSummary orderSummary = new OrderSummary();
-			
+				List<OrderDetails> orderDetails = orderDetailsRepository.findByOrdersId(order.getId());
+				if (!CollectionUtils.isEmpty(orderDetails)) {
 					orderSummary.setOrders(order);
-				
+					orderSummary.setOrderDetails(orderDetails);
+				}
 				return orderSummary;
 			} else {
 				// update payment status and generate order Id
@@ -164,8 +182,11 @@ public class PaymentService {
 
 				razorpayPaymentRepository.save(razorpayPayment);
 				OrderSummary orderSummary = new OrderSummary();
+				List<OrderDetails> orderDetails = orderDetailsRepository.findByOrdersId(order.getId());
+				if (!CollectionUtils.isEmpty(orderDetails)) {
 					orderSummary.setOrders(order);
-				
+					orderSummary.setOrderDetails(orderDetails);
+				}
 				return orderSummary;
 			}
 		} catch (SignatureException e) {
@@ -187,6 +208,7 @@ public class PaymentService {
 		}
 		return result;
 	}
+
 
 
 }

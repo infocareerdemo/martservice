@@ -1,6 +1,7 @@
 package com.mart.dto;
 
 
+import com.mart.entity.Location;
 import com.mart.entity.Role;
 
 import lombok.Data;
@@ -18,6 +19,7 @@ public class LoginDto {
 	
 	private int phoneOTP;
 
+	private Location location;
 	
 	private String password;
 	

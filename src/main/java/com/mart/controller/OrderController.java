@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mart.dto.OrderRequest;
 import com.mart.dto.OrderSaveRequest;
+import com.mart.dto.OrderWithPaymentRequest;
 import com.mart.dto.PaymentRequest;
 import com.mart.dto.WalletRequest;
 import com.mart.service.OrderService;
@@ -28,30 +29,26 @@ public class OrderController {
 	
 	@Autowired
 	OrderService orderService;
-
 	
-   //Save Order details
 	/*@PostMapping("/save")
-	public ResponseEntity<Object> saveOrderAndOrderDetails(@RequestBody List<OrderRequest> orderRequests,
-			@RequestParam Long userId, @RequestParam Long locationId, @RequestBody PaymentRequest paymentRequest) throws Exception {
-		return new ResponseEntity<Object>(orderService.saveOrderWithOrderDetails(orderRequests, userId, locationId, paymentRequest),
+	public ResponseEntity<Object> saveOrderAndOrderDetails(@RequestBody List<OrderRequest> orderRequests, PaymentRequest paymentRequest,
+			@RequestParam Long userId, @RequestParam Long locationId) throws Exception {
+		return new ResponseEntity<Object>(orderService.saveOrderWithOrderDetails(orderRequests,paymentRequest, userId, locationId),
 				HttpStatus.OK);
 	}*/
 	
+	
 	@PostMapping("/save")
-    public ResponseEntity<Object> saveOrderAndOrderDetails(@RequestBody OrderSaveRequest orderSaveRequest) throws Exception {
-        // Extract the properties from the DTO
-        List<OrderRequest> orderRequests = orderSaveRequest.getOrderRequests();
-        Long userId = orderSaveRequest.getUserId();
-        Long locationId = orderSaveRequest.getLocationId();
-        PaymentRequest paymentRequest = orderSaveRequest.getPaymentRequest();
+	public ResponseEntity<Object> saveOrderAndOrderDetails(@RequestBody OrderWithPaymentRequest orderWithPaymentRequest,@RequestParam Long userId, @RequestParam Long locationId) throws Exception {
+	    return new ResponseEntity<>(
+	        orderService.saveOrderWithOrderDetails(
+	            orderWithPaymentRequest.getOrderRequests(),
+	            orderWithPaymentRequest.getPaymentRequest(), locationId, locationId
+	        ),
+	        HttpStatus.OK
+	    );
+	}
 
-        // Call your service method to save order and order details
-        return new ResponseEntity<Object>(
-            orderService.saveOrderWithOrderDetails(orderRequests, userId, locationId, paymentRequest),
-            HttpStatus.OK
-        );
-    }
 	
 	 //Get Orders using by userId
 	@GetMapping("/getOrdersByUserId")
@@ -66,4 +63,28 @@ public class OrderController {
 		return new ResponseEntity<Object>(orderService.getOrderAndOrderDetailsById(id),HttpStatus.OK);
 		
 	}
+	
+	
+	 //Save Order details
+		/*@PostMapping("/save")
+		public ResponseEntity<Object> saveOrderAndOrderDetails(@RequestBody List<OrderRequest> orderRequests,
+				@RequestParam Long userId, @RequestParam Long locationId, @RequestBody PaymentRequest paymentRequest) throws Exception {
+			return new ResponseEntity<Object>(orderService.saveOrderWithOrderDetails(orderRequests, userId, locationId, paymentRequest),
+					HttpStatus.OK);
+		}
+		
+		/*@PostMapping("/save")
+	    public ResponseEntity<Object> saveOrderAndOrderDetails(@RequestBody OrderSaveRequest orderSaveRequest) throws Exception {
+	        // Extract the properties from the DTO
+	        List<OrderRequest> orderRequests = orderSaveRequest.getOrderRequests();
+	        Long userId = orderSaveRequest.getUserId();
+	        Long locationId = orderSaveRequest.getLocationId();
+	        PaymentRequest paymentRequest = orderSaveRequest.getPaymentRequest();
+
+	        // Call your service method to save order and order details
+	        return new ResponseEntity<Object>(
+	            orderService.saveOrderWithOrderDetails(orderRequests, userId, locationId, paymentRequest),
+	            HttpStatus.OK
+	        );
+	    }*/
 }

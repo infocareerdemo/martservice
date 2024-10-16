@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mart.dto.WalletRequest;
 import com.mart.exception.ApplicationException;
 import com.mart.service.WalletService;
 
@@ -30,9 +31,22 @@ public class WalletController {
 
 	 
 	
+	/*@PostMapping("/payByWallett")
+	public ResponseEntity<Object> payByWallett(@RequestParam Long id ,@RequestParam double amount) throws Exception {
+		return new ResponseEntity<Object>(walletService.payByWallett(id, amount), HttpStatus.OK);
+	}*/
+	
+	
 	@PostMapping("/payByWallet")
-	public ResponseEntity<Object> payByWallet(@RequestParam Long id ,@RequestParam double amount) throws Exception {
-		return new ResponseEntity<Object>(walletService.payByWallet(id, amount), HttpStatus.OK);
+	public ResponseEntity<Object> payByWallet(@RequestBody WalletRequest walletRequest) throws Exception {
+		return new ResponseEntity<Object>(walletService.payByWallet(walletRequest), HttpStatus.OK);
+	}
+	
+	
+
+	@PostMapping("/getOrderDetails")
+	public ResponseEntity<Object> getOrderDetails(@RequestParam Long userId, @RequestParam Long orderId) throws ApplicationException {
+		return new ResponseEntity<Object>(walletService.getOrderDetails(userId, orderId), HttpStatus.OK);
 	}
 
 }

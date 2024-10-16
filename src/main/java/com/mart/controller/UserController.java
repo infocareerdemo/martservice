@@ -91,6 +91,8 @@ public class UserController {
 	    loginDto.setEmailId(userDetail.getEmailId());
 	    loginDto.setRole(userDetail.getRole());
 	    loginDto.setPassword("");
+	    loginDto.setLocation(userDetail.getLocation());
+	    
         
 	    return new ResponseEntity<>(loginDto, headers,HttpStatus.OK);
 		
