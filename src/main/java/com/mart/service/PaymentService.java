@@ -69,7 +69,7 @@ public class PaymentService {
 	}
 		    
 	    
-	public RazorPayDetails createOrder(Long id, Long oid) throws ApplicationException {
+	/*public RazorPayDetails createOrder(Long id, Long oid) throws ApplicationException {
 
 
 	    // Proceed with the order creation logic
@@ -99,8 +99,40 @@ public class PaymentService {
 	        throw new ApplicationException(HttpStatus.INTERNAL_SERVER_ERROR, 1003, LocalDateTime.now(), 
 	                                       "Error while creating RazorPay order");
 	    }
-	}
+	}*/
 
+	public RazorPayDetails createOrder(Long id, Long oid, double razorpayAmount) throws ApplicationException {
+
+
+	    // Proceed with the order creation logic
+	    Order razorPayOrder = new Order(null);
+	    try {
+	        Optional<UserDetail> userDetails = userDetailRepository.findById(id);
+	        if (userDetails.isPresent()) {
+	            Optional<Orders> orders = orderRepository.findById(oid);
+	            if (orders.isPresent()) {
+	              //  razorPayOrder = createRazorPayOrder(String.valueOf(orders.get().getTotalAmount()));
+	            	 razorPayOrder = createRazorPayOrder(String.valueOf(razorpayAmount));
+	       
+	                RazorPayDetails razorPayDetails = getRazorPay((String) razorPayOrder.get("id"), 
+	                                                              userDetails.get(), 
+	                                                              razorpayAmount,
+	                                                             // orders.get().getRazorpayAmount(), 
+	                                                              orders.get());
+                    System.out.println("Razor :"+ razorpayAmount );
+	                return razorPayDetails;
+	            } else {
+	                throw new ApplicationException(HttpStatus.NOT_FOUND, 1002, LocalDateTime.now(), "Order not found");
+	            }
+	        } else {
+	            throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "Invalid user");
+	        }
+	    } catch (RazorpayException e) {
+	        e.printStackTrace();
+	        throw new ApplicationException(HttpStatus.INTERNAL_SERVER_ERROR, 1003, LocalDateTime.now(), 
+	                                       "Error while creating RazorPay order");
+	    }
+	}
 	
 	
 	private RazorPayDetails getRazorPay(String orderId, UserDetail userLogin, double amount, Orders orders) {

@@ -23,9 +23,15 @@ public class PaymentController {
 	
 	
 
-	@PostMapping("/createOrder")
+	/*@PostMapping("/createOrder")
 	public ResponseEntity<Object> createOrder(@RequestParam Long id, @RequestParam Long oid) throws ApplicationException {
 		return new ResponseEntity<Object>(paymentService.createOrder(id, oid), HttpStatus.OK);
+	}*/
+	
+
+	@PostMapping("/createOrder")
+	public ResponseEntity<Object> createOrder(@RequestParam Long id, @RequestParam Long oid,@RequestParam double razorpayAmount) throws ApplicationException {
+		return new ResponseEntity<Object>(paymentService.createOrder(id, oid,razorpayAmount), HttpStatus.OK);
 	}
 	
 	@PostMapping("/checkStatus")

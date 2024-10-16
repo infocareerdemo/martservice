@@ -30,20 +30,13 @@ public class OrderController {
 	@Autowired
 	OrderService orderService;
 	
-	/*@PostMapping("/save")
-	public ResponseEntity<Object> saveOrderAndOrderDetails(@RequestBody List<OrderRequest> orderRequests, PaymentRequest paymentRequest,
-			@RequestParam Long userId, @RequestParam Long locationId) throws Exception {
-		return new ResponseEntity<Object>(orderService.saveOrderWithOrderDetails(orderRequests,paymentRequest, userId, locationId),
-				HttpStatus.OK);
-	}*/
-	
 	
 	@PostMapping("/save")
 	public ResponseEntity<Object> saveOrderAndOrderDetails(@RequestBody OrderWithPaymentRequest orderWithPaymentRequest,@RequestParam Long userId, @RequestParam Long locationId) throws Exception {
 	    return new ResponseEntity<>(
 	        orderService.saveOrderWithOrderDetails(
 	            orderWithPaymentRequest.getOrderRequests(),
-	            orderWithPaymentRequest.getPaymentRequest(), locationId, locationId
+	            orderWithPaymentRequest.getPaymentRequest(), userId, locationId
 	        ),
 	        HttpStatus.OK
 	    );
@@ -63,7 +56,7 @@ public class OrderController {
 		return new ResponseEntity<Object>(orderService.getOrderAndOrderDetailsById(id),HttpStatus.OK);
 		
 	}
-	
+}
 	
 	 //Save Order details
 		/*@PostMapping("/save")
@@ -87,4 +80,12 @@ public class OrderController {
 	            HttpStatus.OK
 	        );
 	    }*/
-}
+	
+	
+	/*@PostMapping("/save")
+	public ResponseEntity<Object> saveOrderAndOrderDetails(@RequestBody List<OrderRequest> orderRequests, PaymentRequest paymentRequest,
+			@RequestParam Long userId, @RequestParam Long locationId) throws Exception {
+		return new ResponseEntity<Object>(orderService.saveOrderWithOrderDetails(orderRequests,paymentRequest, userId, locationId),
+				HttpStatus.OK);
+	}*/
+

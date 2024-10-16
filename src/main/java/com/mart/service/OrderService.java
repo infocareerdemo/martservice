@@ -146,70 +146,7 @@ public class OrderService {
 	
 	
 
-	
-	/*public OrderSummary saveOrderWithOrderDetails(List<OrderRequest> orderRequests,PaymentRequest paymentRequest, Long userId, Long locationId)
-			throws ApplicationException {
-				    
-		OrderSummary orderSummary = new OrderSummary();	
-	    
-	    
-		if (!CollectionUtils.isEmpty(orderRequests)) {
-			Orders orders = new Orders();
-			Optional<UserDetail> userLogin = userDetailRepository.findById(userId);
-			if (userLogin.isPresent()) {
-	            orders.setUserDetail(userLogin.get());
-				orders.setAddress(userLogin.get().getAddress());
-				Optional<Location> location = locationRepository.findById(locationId);
-				orders.setLocation(location.get());
-				//orders.setGst(5.0);
-				orders.setPaymentStatus(GeneralConstant.PAY_PENDING.toString());
-				orders.setOrderedDateTime(LocalDateTime.now());
-				
-	            
-				orderRepository.save(orders);
-				double totAmt = 0.0;
-				List<OrderDetails> orderDetailsRes = new ArrayList<>();
-				for (OrderRequest orderRequest : orderRequests) {
-					OrderDetails orderDetails = new OrderDetails();
-					Optional<Product> products = productRepository.findById(orderRequest.getProductId());
-					if (products.isPresent()) {
-						orderDetails.setProducts(products.get());
-						orderDetails.setOrders(orders);
-						orderDetails.setQuantity(orderRequest.getQuantity());
-						orderDetails.setUnitPrice(products.get().getProductPrice());
 
-						double total = orderRequest.getQuantity() * products.get().getProductPrice();
-
-						orderDetails.setTotalPrice(Double.parseDouble(String.format("%.2f", total)));
-						orderDetails.setOrderDateTime(LocalDateTime.now());
-
-						orderDetailsRepository.save(orderDetails);
-						totAmt += total;
-						orderDetailsRes.add(orderDetails);
-					}
-				}
-
-				orders.setOrderAmount(Double.parseDouble(String.format("%.2f", totAmt)));
-                Double gstPercentage = 0.0;
-	            double gst = (gstPercentage / 100.0) * totAmt;
-				orders.setGstAmount(Double.parseDouble(String.format("%.2f", gst)));
-				double totalAmountIncludingGst = totAmt + gst;
-				orders.setTotalAmount(Double.parseDouble(String.format("%.2f", totalAmountIncludingGst)));
-				orders.setWalletAmount(paymentRequest.getWalletAmount());
-				orders.setRazorpayAmount(paymentRequest.getRazorpayAmount());
-				orders.setCashAmount(paymentRequest.getCashAmount());
-				
-				orderRepository.save(orders);
-				orderSummary.setOrderDetails(orderDetailsRes);
-				orderSummary.setOrders(orders);
-				return orderSummary;
-			} else {
-				throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "Invalid user");
-			}
-		} else {
-			throw new ApplicationException(HttpStatus.BAD_REQUEST, 1001, LocalDateTime.now(), "No data present");
-		}
-	}*/
 	
 	
 	public Object saveOrderWithOrderDetails(List<OrderRequest> orderRequests, PaymentRequest paymentRequest,Long userId, Long locationId) throws ApplicationException {
@@ -494,4 +431,70 @@ if (!CollectionUtils.isEmpty(orderRequests)) {
 } else {
     throw new ApplicationException(HttpStatus.BAD_REQUEST, 1001, LocalDateTime.now(), "No data present");
 }
+}*/
+
+
+
+/*public OrderSummary saveOrderWithOrderDetails(List<OrderRequest> orderRequests,PaymentRequest paymentRequest, Long userId, Long locationId)
+		throws ApplicationException {
+			    
+	OrderSummary orderSummary = new OrderSummary();	
+    
+    
+	if (!CollectionUtils.isEmpty(orderRequests)) {
+		Orders orders = new Orders();
+		Optional<UserDetail> userLogin = userDetailRepository.findById(userId);
+		if (userLogin.isPresent()) {
+            orders.setUserDetail(userLogin.get());
+			orders.setAddress(userLogin.get().getAddress());
+			Optional<Location> location = locationRepository.findById(locationId);
+			orders.setLocation(location.get());
+			//orders.setGst(5.0);
+			orders.setPaymentStatus(GeneralConstant.PAY_PENDING.toString());
+			orders.setOrderedDateTime(LocalDateTime.now());
+			
+            
+			orderRepository.save(orders);
+			double totAmt = 0.0;
+			List<OrderDetails> orderDetailsRes = new ArrayList<>();
+			for (OrderRequest orderRequest : orderRequests) {
+				OrderDetails orderDetails = new OrderDetails();
+				Optional<Product> products = productRepository.findById(orderRequest.getProductId());
+				if (products.isPresent()) {
+					orderDetails.setProducts(products.get());
+					orderDetails.setOrders(orders);
+					orderDetails.setQuantity(orderRequest.getQuantity());
+					orderDetails.setUnitPrice(products.get().getProductPrice());
+
+					double total = orderRequest.getQuantity() * products.get().getProductPrice();
+
+					orderDetails.setTotalPrice(Double.parseDouble(String.format("%.2f", total)));
+					orderDetails.setOrderDateTime(LocalDateTime.now());
+
+					orderDetailsRepository.save(orderDetails);
+					totAmt += total;
+					orderDetailsRes.add(orderDetails);
+				}
+			}
+
+			orders.setOrderAmount(Double.parseDouble(String.format("%.2f", totAmt)));
+            Double gstPercentage = 0.0;
+            double gst = (gstPercentage / 100.0) * totAmt;
+			orders.setGstAmount(Double.parseDouble(String.format("%.2f", gst)));
+			double totalAmountIncludingGst = totAmt + gst;
+			orders.setTotalAmount(Double.parseDouble(String.format("%.2f", totalAmountIncludingGst)));
+			orders.setWalletAmount(paymentRequest.getWalletAmount());
+			orders.setRazorpayAmount(paymentRequest.getRazorpayAmount());
+			orders.setCashAmount(paymentRequest.getCashAmount());
+			
+			orderRepository.save(orders);
+			orderSummary.setOrderDetails(orderDetailsRes);
+			orderSummary.setOrders(orders);
+			return orderSummary;
+		} else {
+			throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "Invalid user");
+		}
+	} else {
+		throw new ApplicationException(HttpStatus.BAD_REQUEST, 1001, LocalDateTime.now(), "No data present");
+	}
 }*/
