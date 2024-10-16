@@ -111,6 +111,9 @@ public class PaymentService {
 	        if (userDetails.isPresent()) {
 	            Optional<Orders> orders = orderRepository.findById(oid);
 	            if (orders.isPresent()) {
+	            	orders.get().setRazorpayAmount(razorpayAmount);
+	            	
+	            	orderRepository.save(orders.get());
 	              //  razorPayOrder = createRazorPayOrder(String.valueOf(orders.get().getTotalAmount()));
 	            	 razorPayOrder = createRazorPayOrder(String.valueOf(razorpayAmount));
 	       
