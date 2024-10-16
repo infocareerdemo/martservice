@@ -1,9 +1,14 @@
 package com.mart.controller;
 
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,6 +59,54 @@ public class OrderController {
 		return new ResponseEntity<Object>(orderService.getOrderAndOrderDetailsById(id),HttpStatus.OK);
 		
 	}
+	
+	@GetMapping("/getItemQty")
+	public ResponseEntity<Object> getOrderedItemsWithQuantityForToday(@RequestParam Long locationId) {
+		return new ResponseEntity<Object>(orderService.getOrderedItemsWithQuantityForToday(locationId), HttpStatus.OK);
+	}
+
+	@GetMapping("/today")
+	public ResponseEntity<Object> getTodayOrders(@RequestParam Long locationId) {
+		return new ResponseEntity<Object>(orderService.getTodayOrders(locationId), HttpStatus.OK);
+	}
+
+	@GetMapping("/dashboard")
+	public ResponseEntity<Object> getOrderItemCount(@RequestParam Long locationId) {
+		return new ResponseEntity<Object>(orderService.getOrderItemCount(locationId), HttpStatus.OK);
+	}
+
+	@PostMapping("/report")
+	public ResponseEntity<Object> generateOrderDetailsExcelReport(
+			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
+			@RequestParam(required = false) Long locationId) throws IOException {
+		byte[] in = orderService.generateOrderDetailsExcelReport(date, locationId);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+		String filename = "Order_Report.xlsx";
+		headers.setContentDispositionFormData(filename, filename);
+		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+		return new ResponseEntity<>(in, headers, HttpStatus.OK);
+	}
+	
+	@GetMapping("/id")
+	public ResponseEntity<Object> getOrderWithOrderDetailsById(@RequestParam Long id) throws Exception {
+		return new ResponseEntity<Object>(orderService.getOrderWithOrderDetailsById(id), HttpStatus.OK);
+	}
+	
+	
+	@PostMapping("/getTotalQuantityOrderDetailsExcel")
+	public ResponseEntity<Object> getTotalQuantityOrderDetailsExcel(
+			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
+			@RequestParam(required = false) Long locationId) throws IOException {
+		byte[] in = orderService.getTotalQuantityOrderDetailsExcel(date, locationId);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+		String filename = "Total_Order_Report.xlsx";
+		headers.setContentDispositionFormData(filename, filename);
+		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+		return new ResponseEntity<>(in, headers, HttpStatus.OK);
+	}
+	
 }
 	
 	 //Save Order details

@@ -14,6 +14,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
 	    List<Product> findByLocationLocationId(Long locationId);
 
+		List<Product> findByLocationLocationIdAndProductActive(Long locationId, boolean b);
+
 }
 
 

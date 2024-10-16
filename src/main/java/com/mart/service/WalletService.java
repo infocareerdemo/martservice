@@ -170,6 +170,8 @@ public class WalletService {
 	    } else {
 	        throw new ApplicationException(HttpStatus.BAD_REQUEST, 1001, LocalDateTime.now(), "Invalid wallet request data");
 	    }
+	    
+	    
 	}
 
 

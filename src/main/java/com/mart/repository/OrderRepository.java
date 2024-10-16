@@ -16,4 +16,9 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
 	List<Orders> findByOrderedDateTimeBetween(LocalDateTime startOfDay, LocalDateTime endOfDay);
 
     List<Orders> findByUserDetailUserId(Long userId);
+    
+   
+	List<Orders> findByOrderedDateTimeBetweenAndLocationLocationId(LocalDateTime startOfDay, LocalDateTime endOfDay,
+			Long locationId);
+
 }

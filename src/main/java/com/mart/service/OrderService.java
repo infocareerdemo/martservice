@@ -15,6 +15,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +33,8 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 
 import com.mart.config.GeneralConstant;
+import com.mart.dto.ItemCount;
+import com.mart.dto.OrderDashboard;
 import com.mart.dto.OrderRequest;
 import com.mart.dto.OrderSummary;
 import com.mart.dto.PaymentRequest;
@@ -211,6 +221,422 @@ public class OrderService {
 			throw new ApplicationException(HttpStatus.BAD_REQUEST, 1001, LocalDateTime.now(), "No data present");
 		}
 	}
+	
+	
+	
+	public Map<String, Object> getOrderedItemsWithQuantityForToday(Long locationId) {
+		Map<String, Object> itemWithQty = new HashMap<>();
+		LocalDateTime startOfDay = LocalDateTime.now().toLocalDate().atStartOfDay();
+		LocalDateTime endOfDay = startOfDay.plusDays(1);
+		List<Orders> orders = orderRepository.findByOrderedDateTimeBetweenAndLocationLocationId(startOfDay, endOfDay,
+				locationId);
+		if (!CollectionUtils.isEmpty(orders)) {
+			orders = orders.stream().filter(o -> o.getPaymentStatus().equals(GeneralConstant.PAY_SUCCESS.toString()))
+					.collect(Collectors.toList());
+			if (!CollectionUtils.isEmpty(orders)) {
+				for (Orders order : orders) {
+					List<OrderDetails> orderDetails = orderDetailsRepository.findByOrdersId(order.getId());
+					if (!CollectionUtils.isEmpty(orderDetails)) {
+						for (OrderDetails orderDetail : orderDetails) {
+							if (itemWithQty.get(orderDetail.getProducts().getProductName()) != null) {
+								Long qty = (Long) itemWithQty.get(orderDetail.getProducts().getProductName());
+								qty += orderDetail.getQuantity();
+
+								itemWithQty.put(orderDetail.getProducts().getProductName(), qty);
+							} else {
+								itemWithQty.put(orderDetail.getProducts().getProductName(), orderDetail.getQuantity());
+							}
+						}
+					}
+				}
+			}
+		}
+		return itemWithQty;
+	}
+	
+	
+
+	public List<Orders> getTodayOrders(Long locationId) {
+		LocalDateTime startOfDay = LocalDateTime.now().toLocalDate().atStartOfDay();
+		LocalDateTime endOfDay = startOfDay.plusDays(1);
+		List<Orders> orders = orderRepository.findByOrderedDateTimeBetweenAndLocationLocationId(startOfDay, endOfDay,
+				locationId);
+		if (!CollectionUtils.isEmpty(orders)) {
+			orders = orders.stream().filter(o -> o.getPaymentStatus().equals(GeneralConstant.PAY_SUCCESS.toString()))
+					.collect(Collectors.toList());
+			if (!CollectionUtils.isEmpty(orders)) {
+				return orders;
+			}
+		}
+		return null;
+	}
+	
+	
+	public OrderDashboard getOrderItemCount(Long locationId) {
+		OrderDashboard orderDashboard = new OrderDashboard();
+		List<Orders> locationOrders = null;
+		if (locationId != null) {
+			locationOrders = getTodayOrders(locationId);
+		} else {
+			locationOrders = getTodayOrders(locationRepository.findAll().get(0).getLocationId());
+		}
+
+		LocalDateTime startOfDay = LocalDateTime.now().toLocalDate().atStartOfDay();
+		LocalDateTime endOfDay = startOfDay.plusDays(1);
+		List<Orders> todayOrders = orderRepository.findByOrderedDateTimeBetween(startOfDay, endOfDay);
+		if (!CollectionUtils.isEmpty(todayOrders)) {
+			todayOrders = todayOrders.stream()
+					.filter(o -> o.getPaymentStatus().equals(GeneralConstant.PAY_SUCCESS.toString()))
+					.collect(Collectors.toList());
+		}
+		orderDashboard.setTotalOrdersCount((long) todayOrders.size());
+
+		List<ItemCount> itemCounts = new ArrayList<>();
+		List<Product> products = productRepository.findAll();
+		if (!CollectionUtils.isEmpty(products)) {
+			if (!CollectionUtils.isEmpty(todayOrders)) {
+				todayOrders = todayOrders.stream()
+						.filter(o -> o.getPaymentStatus().equals(GeneralConstant.PAY_SUCCESS.toString()))
+						.collect(Collectors.toList());
+				if (!CollectionUtils.isEmpty(todayOrders)) {
+					for (Product product : products) {
+						ItemCount itemCount = new ItemCount();
+						long count = 0;
+						for (Orders order : todayOrders) {
+							List<OrderDetails> orderDetails = orderDetailsRepository.findByOrdersId(order.getId());
+							for (OrderDetails orderDetail : orderDetails) {
+								if (orderDetail.getProducts().getProductId() == product.getProductId()) {
+									count++;
+								}
+							}
+						}
+						if (count > 0) {
+							itemCount.setProducts(product);
+							itemCount.setCount(count);
+							itemCounts.add(itemCount);
+						}
+					}
+				}
+			}
+		}
+
+		orderDashboard.setTotalOrderDetails(itemCounts);
+
+		Map<String, Long> itemWithQty = new HashMap<>();
+		if (!CollectionUtils.isEmpty(locationOrders)) {
+			locationOrders = locationOrders.stream()
+					.filter(o -> o.getPaymentStatus().equals(GeneralConstant.PAY_SUCCESS.toString()))
+					.collect(Collectors.toList());
+			if (!CollectionUtils.isEmpty(locationOrders)) {
+				for (Orders order : locationOrders) {
+					List<OrderDetails> orderDetails = orderDetailsRepository.findByOrdersId(order.getId());
+					if (!CollectionUtils.isEmpty(orderDetails)) {
+						for (OrderDetails orderDetail : orderDetails) {
+							if (itemWithQty.get(orderDetail.getProducts().getProductName()) != null) {
+								Long qty = (Long) itemWithQty.get(orderDetail.getProducts().getProductName());
+								qty += 1;
+
+								itemWithQty.put(orderDetail.getProducts().getProductName(), qty);
+							} else {
+								itemWithQty.put(orderDetail.getProducts().getProductName(), (long) 1);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		orderDashboard.setLocationOrderDetails(itemWithQty);
+
+		return orderDashboard;
+	}
+	
+	
+	public byte[] generateOrderDetailsExcelReport(LocalDate date, Long locationId) throws IOException {
+		LocalDateTime startDate = null;
+		LocalDateTime endDate = null;
+		if (date != null) {
+			startDate = date.atStartOfDay();
+			endDate = startDate.plusDays(1);
+		} else {
+			startDate = LocalDate.now().atStartOfDay();
+			endDate = startDate.plusDays(1);
+		}
+		List<Orders> orders = null;
+		if (locationId != null) {
+			orders = orderRepository.findByOrderedDateTimeBetweenAndLocationLocationId(startDate, endDate, locationId);
+			if (!CollectionUtils.isEmpty(orders)) {
+				orders = orders.stream()
+						.filter(o -> o.getPaymentStatus().equals(GeneralConstant.PAY_SUCCESS.toString()))
+						.collect(Collectors.toList());
+			}
+		} else {
+			orders = orderRepository.findByOrderedDateTimeBetween(startDate, endDate);
+			orders = orders.stream().filter(o -> o.getPaymentStatus().equals(GeneralConstant.PAY_SUCCESS.toString()))
+					.sorted(Comparator.comparing(o -> ((Orders) o).getLocation().getLocationId()))
+					.collect(Collectors.toList());
+		}
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMM-YYYY");
+		if (!CollectionUtils.isEmpty(orders)) {
+			XSSFWorkbook wb = new XSSFWorkbook();
+			XSSFSheet sheet = wb.createSheet("Sheet1");
+			XSSFRow row = sheet.createRow(0);
+
+			Font headerFont = wb.createFont();
+			headerFont.setBold(true);
+			// Create a cell style with the bold font
+			CellStyle headerCellStyle = wb.createCellStyle();
+			headerCellStyle.setFont(headerFont);
+			
+			CellStyle centerStyle = wb.createCellStyle();
+//	        centerStyle.setAlignment(HorizontalAlignment.CENTER);
+	        centerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+	        
+			XSSFCell cell;
+
+			cell = row.createCell(0);
+			cell.setCellValue("Order Details For " + date.format(formatter));
+			cell.setCellStyle(headerCellStyle);
+
+			row = sheet.createRow(2);
+			cell = row.createCell(0);
+			cell.setCellValue("Sl.No");
+			cell.setCellStyle(headerCellStyle);
+			cell = row.createCell(1);
+			cell.setCellValue("Location");
+			cell.setCellStyle(headerCellStyle);
+			cell = row.createCell(2);
+			cell.setCellValue("Name");
+			cell.setCellStyle(headerCellStyle);
+			cell = row.createCell(3);
+			cell.setCellValue("Phone No");
+			cell.setCellStyle(headerCellStyle);
+			cell = row.createCell(4);
+			cell.setCellValue("Order Id");
+			cell.setCellStyle(headerCellStyle);
+			cell = row.createCell(5);
+			cell.setCellValue("Food Item");
+			cell.setCellStyle(headerCellStyle);
+			cell = row.createCell(6);
+			cell.setCellValue("Quantity");
+			cell.setCellStyle(headerCellStyle);
+
+			int j = 3;
+			int idx = 1;
+			int r = 0;
+			for (Orders order : orders) {
+				r = j;
+				row = sheet.createRow(j);
+				cell = row.createCell(0);
+				cell.setCellValue(idx);
+				cell.setCellStyle(centerStyle);
+				cell = row.createCell(1);
+				 String locationInfo = order.getLocation().getLocationName() 
+                         + " (" 
+                         + order.getLocation().getCompanyName() 
+                         + ")";
+                cell.setCellValue(locationInfo);
+				//cell.setCellValue(order.getLocation().getLocationName());
+				cell.setCellStyle(centerStyle);
+				cell = row.createCell(2);
+				cell.setCellValue(order.getUserDetail().getUserName());
+				cell.setCellStyle(centerStyle);
+				cell = row.createCell(3);
+				cell.setCellValue(order.getUserDetail().getPhone());
+				cell.setCellStyle(centerStyle);
+				cell = row.createCell(4);
+				cell.setCellValue(order.getOrderId());
+				cell.setCellStyle(centerStyle);
+				List<OrderDetails> orderDetails = orderDetailsRepository.findByOrdersId(order.getId());
+				boolean flag = false;
+				for (OrderDetails orderDetail : orderDetails) {
+					if (flag == false) {
+						cell = row.createCell(5);
+						cell.setCellValue(orderDetail.getProducts().getProductName());
+						cell.setCellStyle(centerStyle);
+						cell = row.createCell(6);
+						cell.setCellValue(orderDetail.getQuantity());
+						cell.setCellStyle(centerStyle);
+						flag = true;
+						j++;
+					} else {
+						row = sheet.createRow(j);
+						cell = row.createCell(5);
+						cell.setCellValue(orderDetail.getProducts().getProductName());
+						cell.setCellStyle(centerStyle);
+						cell = row.createCell(6);
+						cell.setCellValue(orderDetail.getQuantity());
+						cell.setCellStyle(centerStyle);
+						j++;
+					}
+				}
+				
+				
+				if (orderDetails.size() > 1) {
+					sheet.addMergedRegion(new CellRangeAddress(r, j - 1, 0, 0));
+					sheet.addMergedRegion(new CellRangeAddress(r, j - 1, 1, 1));
+					sheet.addMergedRegion(new CellRangeAddress(r, j - 1, 2, 2));
+					sheet.addMergedRegion(new CellRangeAddress(r, j - 1, 3, 3));
+					sheet.addMergedRegion(new CellRangeAddress(r, j - 1, 4, 4));
+				}
+				idx++;
+			}
+			ByteArrayOutputStream fileOut = new ByteArrayOutputStream();
+			wb.write(fileOut);
+			fileOut.close();
+			byte bsg[] = fileOut.toByteArray();
+			wb.close();
+			return bsg;
+		}
+		return null;
+	}
+
+	
+	public OrderSummary getOrderWithOrderDetailsById(Long id) throws ApplicationException {
+		OrderSummary orderSummary = new OrderSummary();
+		Optional<Orders> orders = orderRepository.findById(id);
+		if (orders.isPresent()) {
+			List<OrderDetails> orderDetails = orderDetailsRepository.findByOrdersId(id);
+			if (!CollectionUtils.isEmpty(orderDetails)) {
+				orderSummary.setOrders(orders.get());
+				orderSummary.setOrderDetails(orderDetails);
+			}
+		} else {
+			throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "No order found");
+		}
+		return orderSummary;
+	}
+	
+	
+	public byte[] getTotalQuantityOrderDetailsExcel(LocalDate date, Long locationId) throws IOException {
+	    LocalDateTime startDate = null;
+	    LocalDateTime endDate = null;
+
+	    if (date != null) {
+	        startDate = date.atStartOfDay();
+	        endDate = startDate.plusDays(1);
+	    } else {
+	        startDate = LocalDate.now().atStartOfDay();
+	        endDate = startDate.plusDays(1);
+	    }
+
+	    List<Orders> orders = locationId != null ?
+	            orderRepository.findByOrderedDateTimeBetweenAndLocationLocationId(startDate, endDate, locationId) :
+	            orderRepository.findByOrderedDateTimeBetween(startDate, endDate);
+
+	    if (!CollectionUtils.isEmpty(orders)) {
+	        orders = orders.stream()
+	                .filter(o -> o.getPaymentStatus().equals(GeneralConstant.PAY_SUCCESS.toString()))
+	                .sorted(Comparator.comparing(o -> o.getLocation().getLocationId()))
+	                .collect(Collectors.toList());
+	    }
+
+	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMM-YYYY");
+	    if (!CollectionUtils.isEmpty(orders)) {
+	        XSSFWorkbook wb = new XSSFWorkbook();
+	        XSSFSheet sheet = wb.createSheet("Sheet1");
+	        XSSFRow row = sheet.createRow(0);
+
+	        Font headerFont = wb.createFont();
+	        headerFont.setBold(true);
+	        CellStyle headerCellStyle = wb.createCellStyle();
+	        headerCellStyle.setFont(headerFont);
+
+	        CellStyle centerStyle = wb.createCellStyle();
+	        centerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+	        XSSFCell cell;
+
+	        // Header Row
+	        cell = row.createCell(0);
+	        cell.setCellValue("Order Details For " + date.format(formatter));
+	        cell.setCellStyle(headerCellStyle);
+
+	        // Table Headers
+	        row = sheet.createRow(2);
+	        cell = row.createCell(0);
+	        cell.setCellValue("Sl.No");
+	        cell.setCellStyle(headerCellStyle);
+	        cell = row.createCell(1);
+	        cell.setCellValue("Location");
+	        cell.setCellStyle(headerCellStyle);
+	        cell = row.createCell(2);
+	        cell.setCellValue("Food Item");
+	        cell.setCellStyle(headerCellStyle);
+	        cell = row.createCell(3);
+	        cell.setCellValue("Quantity");
+	        cell.setCellStyle(headerCellStyle);
+
+	        // Map to hold aggregated quantities by product and location
+	        Map<String, Map<String, Long>> locationProductQuantityMap = new HashMap<>();
+
+	        for (Orders order : orders) {
+	            String locationName = order.getLocation().getLocationName();
+	            String companyName = order.getLocation().getCompanyName();  // Get company name
+	            List<OrderDetails> orderDetails = orderDetailsRepository.findByOrdersId(order.getId());
+
+	            // Concatenate location name and company name
+	            String locationInfo = locationName + " (" + companyName + ")";
+
+	            Map<String, Long> productQuantityMap = locationProductQuantityMap
+	                    .computeIfAbsent(locationInfo, k -> new HashMap<>());
+
+	            for (OrderDetails orderDetail : orderDetails) {
+	                String productName = orderDetail.getProducts().getProductName();
+	                productQuantityMap.put(productName,
+	                        productQuantityMap.getOrDefault(productName, 0L) + orderDetail.getQuantity());
+	            }
+	        }
+
+	        int j = 3;  // Start row for data
+	        int idx = 1;  // Initialize serial number
+
+	        // Write aggregated data to the Excel sheet
+	        for (Map.Entry<String, Map<String, Long>> locationEntry : locationProductQuantityMap.entrySet()) {
+	            String locationInfo = locationEntry.getKey();
+	            Map<String, Long> productQuantityMap = locationEntry.getValue();
+
+	            // Add serial number for each unique location
+	            row = sheet.createRow(j);
+	            cell = row.createCell(0);
+	            cell.setCellValue(idx++);
+	            cell.setCellStyle(centerStyle);
+
+	            // Add location and company name cell
+	            cell = row.createCell(1);
+	            cell.setCellValue(locationInfo);
+	            cell.setCellStyle(centerStyle);
+
+	            // Add aggregated product quantities
+	            boolean isFirstProduct = true;
+	            for (Map.Entry<String, Long> entry : productQuantityMap.entrySet()) {
+	                if (!isFirstProduct) {
+	                    row = sheet.createRow(j);
+	                }
+	                cell = row.createCell(2);
+	                cell.setCellValue(entry.getKey());
+	                cell.setCellStyle(centerStyle);
+	                cell = row.createCell(3);
+	                // Convert the Long value to int
+	                cell.setCellValue(entry.getValue().intValue());
+	                cell.setCellStyle(centerStyle);
+
+	                isFirstProduct = false;
+	                j++;
+	            }
+	        }
+
+	        ByteArrayOutputStream fileOut = new ByteArrayOutputStream();
+	        wb.write(fileOut);
+	        fileOut.close();
+	        byte[] bsg = fileOut.toByteArray();
+	        wb.close();
+	        return bsg;
+	    }
+
+	    return null;
+	}
+
 	
 }
 

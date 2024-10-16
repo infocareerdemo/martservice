@@ -10,6 +10,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.mart.entity.Location;
@@ -104,6 +105,44 @@ public class ProductService {
 		}
 	}
 
+	
+
+	public Product getFoodItemsById(Long id) {
+		Optional<Product> product = productRepository.findById(id);
+		if (product.isPresent()) {
+			return product.get();
+		}
+		return null;
+	}
+	
+	
+	public String activeOrInactiveProduct(Product products) throws ApplicationException {
+		Optional<Product> product = productRepository.findById(products.getProductId());
+		if (product.isPresent()) {
+			if (products.isProductActive() == true) {
+				product.get().setProductActive(true);
+				product.get().setUpdatedDate(LocalDateTime.now());
+				product.get().setProductUpdatedBy(products.getProductUpdatedBy());
+				productRepository.save(product.get());
+
+				return "Product is active";
+			} else {
+				product.get().setProductActive(false);
+				product.get().setUpdatedDate(LocalDateTime.now());
+				product.get().setProductUpdatedBy(products.getProductUpdatedBy());
+				productRepository.save(product.get());
+
+				return "Product is inactive";
+			}
+		} else {
+			throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Product not found");
+		}
+	}
+
+	public List<Product> getActiveProducts(Long locationId) {
+		return productRepository.findByLocationLocationIdAndProductActive(locationId, true);
+	}
+	
 
 
 }
