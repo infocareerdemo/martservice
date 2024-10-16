@@ -31,15 +31,13 @@ public class OrderController {
 	OrderService orderService;
 	
 	
+	
+	
 	@PostMapping("/save")
-	public ResponseEntity<Object> saveOrderAndOrderDetails(@RequestBody OrderWithPaymentRequest orderWithPaymentRequest,@RequestParam Long userId, @RequestParam Long locationId) throws Exception {
-	    return new ResponseEntity<>(
-	        orderService.saveOrderWithOrderDetails(
-	            orderWithPaymentRequest.getOrderRequests(),
-	            orderWithPaymentRequest.getPaymentRequest(), userId, locationId
-	        ),
-	        HttpStatus.OK
-	    );
+	public ResponseEntity<Object> saveOrderAndOrderDetails(@RequestBody List<OrderRequest> orderRequests,
+			@RequestParam Long userId, @RequestParam Long locationId) throws Exception {
+		return new ResponseEntity<Object>(orderService.saveOrderWithOrderDetails(orderRequests, userId, locationId),
+				HttpStatus.OK);
 	}
 
 	
@@ -89,3 +87,14 @@ public class OrderController {
 				HttpStatus.OK);
 	}*/
 
+
+/*@PostMapping("/save")
+public ResponseEntity<Object> saveOrderAndOrderDetails(@RequestBody OrderWithPaymentRequest orderWithPaymentRequest,@RequestParam Long userId, @RequestParam Long locationId) throws Exception {
+    return new ResponseEntity<>(
+        orderService.saveOrderWithOrderDetails(
+            orderWithPaymentRequest.getOrderRequests(),
+            orderWithPaymentRequest.getPaymentRequest(), userId, locationId
+        ),
+        HttpStatus.OK
+    );
+}*/

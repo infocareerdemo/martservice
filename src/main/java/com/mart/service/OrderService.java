@@ -149,7 +149,7 @@ public class OrderService {
 
 	
 	
-	public Object saveOrderWithOrderDetails(List<OrderRequest> orderRequests, PaymentRequest paymentRequest,Long userId, Long locationId) throws ApplicationException {
+	public Object saveOrderWithOrderDetails(List<OrderRequest> orderRequests,Long userId, Long locationId) throws ApplicationException {
 				    
 		OrderSummary orderSummary = new OrderSummary();	
 	    
@@ -196,9 +196,9 @@ public class OrderService {
 				orders.setGstAmount(Double.parseDouble(String.format("%.2f", gst)));
 				double totalAmountIncludingGst = totAmt + gst;
 				orders.setTotalAmount(Double.parseDouble(String.format("%.2f", totalAmountIncludingGst)));
-				orders.setWalletAmount(paymentRequest.getWalletAmount());
-				orders.setRazorpayAmount(paymentRequest.getRazorpayAmount());
-				orders.setCashAmount(paymentRequest.getCashAmount());
+				//orders.setWalletAmount(paymentRequest.getWalletAmount());
+				//orders.setRazorpayAmount(paymentRequest.getRazorpayAmount());
+				//orders.setCashAmount(paymentRequest.getCashAmount());
 				
 				orderRepository.save(orders);
 				orderSummary.setOrderDetails(orderDetailsRes);
