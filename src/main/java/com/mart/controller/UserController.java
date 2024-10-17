@@ -99,7 +99,34 @@ public class UserController {
 	}
 	
 	
+	@GetMapping("/getUserDetailsById")
+	public ResponseEntity<Object> getUserDetailsById(@RequestParam Long userId, HttpServletResponse response) throws Exception{		
+		return new ResponseEntity<Object>(userDetailService.getUserDetailsById(userId, response), HttpStatus.OK);
+		
+	}
 	
+	
+	
+	@PostMapping("/adminLogin")
+	public ResponseEntity<Object> adminLogin(@RequestBody LoginDto loginDto, HttpServletResponse response) throws Exception{		
+		UserDetail userDetail = userDetailService.verifyAdminLoginCredential(loginDto,response);	
+		String token =  jwtUtil.createToken(userDetail.getUserName());
+		 
+		response.setHeader("Authorization", "Bearer " + token);    		
+	    HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
+        
+        loginDto.setUserId(userDetail.getUserId());
+	    loginDto.setEmailId(userDetail.getEmailId());
+	    loginDto.setRole(userDetail.getRole());
+	    loginDto.setPassword("");
+	    loginDto.setUsername(userDetail.getUserName());
+	    loginDto.setLocation(userDetail.getLocation());
+	    
+        
+	    return new ResponseEntity<>(loginDto, headers,HttpStatus.OK);
+		
+	}
 	
 	
 	

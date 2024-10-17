@@ -9,14 +9,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
 import com.mart.dto.LoginDto;
+import com.mart.dto.UserDetailDto;
 import com.mart.entity.UserDetail;
 import com.mart.exception.ApplicationException;
 import com.mart.message.EmailNotificationService;
 import com.mart.message.SmsNotificationService;
 import com.mart.repository.RoleRepository;
 import com.mart.repository.UserDetailRepository;
+import com.mart.util.CryptoUtils;
 import com.mart.util.FunUtils;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Service
@@ -31,10 +35,12 @@ public class UserDetailService {
 	
 	@Autowired
 	EmailNotificationService emailNotificationService;
+	
 	@Autowired
 	SmsNotificationService smsNotificationService;
 	
-	
+	@Autowired
+	CryptoUtils cryptoUtils;
 	
 	
 	  public UserDetail  verifyLoginUserDetail(LoginDto loginDto) throws ApplicationException
@@ -137,6 +143,49 @@ public class UserDetailService {
 	        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "User Not Found");
 	    }
 		return userDetail;
+	}
+
+
+	public UserDetailDto getUserDetailsById(Long userId, HttpServletResponse response)throws ApplicationException {
+		 if(userId !=null) {
+			 Optional<UserDetail> userDetail = userDetailRepository.findById(userId);
+			   if(userDetail !=null) {
+				   UserDetailDto userDetailDto = new UserDetailDto();
+				   userDetailDto.setUserName(userDetail.get().getUserName());
+				   userDetailDto.setPhoneNo(userDetail.get().getPhone());
+				   userDetailDto.setEmailId(userDetail.get().getEmailId());
+				   userDetailDto.setRole(userDetail.get().getRole());
+				   userDetailDto.setAddress(userDetail.get().getAddress());
+				   return userDetailDto;				   
+			   }else {
+			        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "User Not Found");
+
+			   }			 
+		 }else{
+		        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Data Not Found");
+		 }
+		 
+	}
+
+
+
+	public UserDetail verifyAdminLoginCredential(LoginDto loginDto, HttpServletResponse response)throws Exception {
+		 UserDetail userDetail = userDetailRepository.findByPhone(loginDto.getPhone());	 
+		 if(userDetail !=null) {
+				String pwd = userDetail.getPassWord();
+
+			 if(pwd.equals(loginDto.getPassword())) {
+				 
+			 }else {
+		            throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "Invalid Credentials");
+
+			 }
+		
+		 }
+			return userDetail;
+
+		
 	}	
 	  
+
 }

@@ -162,8 +162,7 @@ public class OrderService {
 	public Object saveOrderWithOrderDetails(List<OrderRequest> orderRequests,Long userId, Long locationId) throws ApplicationException {
 				    
 		OrderSummary orderSummary = new OrderSummary();	
-	    
-	    
+	    	    
 		if (!CollectionUtils.isEmpty(orderRequests)) {
 			Orders orders = new Orders();
 			Optional<UserDetail> userLogin = userDetailRepository.findById(userId);
@@ -206,9 +205,6 @@ public class OrderService {
 				orders.setGstAmount(Double.parseDouble(String.format("%.2f", gst)));
 				double totalAmountIncludingGst = totAmt + gst;
 				orders.setTotalAmount(Double.parseDouble(String.format("%.2f", totalAmountIncludingGst)));
-				//orders.setWalletAmount(paymentRequest.getWalletAmount());
-				//orders.setRazorpayAmount(paymentRequest.getRazorpayAmount());
-				//orders.setCashAmount(paymentRequest.getCashAmount());
 				
 				orderRepository.save(orders);
 				orderSummary.setOrderDetails(orderDetailsRes);
@@ -637,8 +633,120 @@ public class OrderService {
 	    return null;
 	}
 
-	
 }
+	
+	/*public Object saveOrderWithOrderDetails(List<OrderRequest> orderRequests, Long userId, Long locationId, PaymentRequest paymentRequest) throws ApplicationException {
+	    
+	    OrderSummary orderSummary = new OrderSummary();    
+
+	    if (!CollectionUtils.isEmpty(orderRequests)) {
+	        Orders orders = new Orders();
+	        Optional<UserDetail> userLogin = userDetailRepository.findById(userId);
+	        if (userLogin.isPresent()) {
+	            orders.setUserDetail(userLogin.get());
+	            orders.setAddress(userLogin.get().getAddress());
+	            Optional<Location> location = locationRepository.findById(locationId);
+	            orders.setLocation(location.get());
+	            orders.setPaymentStatus(GeneralConstant.PAY_PENDING.toString());
+	            orders.setOrderedDateTime(LocalDateTime.now());
+
+	            orderRepository.save(orders);
+	            double totAmt = 0.0;
+	            List<OrderDetails> orderDetailsRes = new ArrayList<>();
+	            for (OrderRequest orderRequest : orderRequests) {
+	                OrderDetails orderDetails = new OrderDetails();
+	                Optional<Product> products = productRepository.findById(orderRequest.getProductId());
+	                if (products.isPresent()) {
+	                    orderDetails.setProducts(products.get());
+	                    orderDetails.setOrders(orders);
+	                    orderDetails.setQuantity(orderRequest.getQuantity());
+	                    orderDetails.setUnitPrice(products.get().getProductPrice());
+
+	                    double total = orderRequest.getQuantity() * products.get().getProductPrice();
+
+	                    orderDetails.setTotalPrice(Double.parseDouble(String.format("%.2f", total)));
+	                    orderDetails.setOrderDateTime(LocalDateTime.now());
+
+	                    orderDetailsRepository.save(orderDetails);
+	                    totAmt += total;
+	                    orderDetailsRes.add(orderDetails);
+	                }
+	            }
+
+	            orders.setOrderAmount(Double.parseDouble(String.format("%.2f", totAmt)));
+	            Double gstPercentage = 5.0; // or retrieve from config
+	            double gst = (gstPercentage / 100.0) * totAmt;
+	            orders.setGstAmount(Double.parseDouble(String.format("%.2f", gst)));
+	            double totalAmountIncludingGst = totAmt + gst;
+	            orders.setTotalAmount(Double.parseDouble(String.format("%.2f", totalAmountIncludingGst)));
+
+	            
+	         // If Wallet is used
+	            if (paymentRequest.getWalletAmount() > 0.0) {
+	    	        Optional<UserDetail> userDetail = userDetailRepository.findById(userId);
+                        if(userDetail !=null) {
+            	            Wallet wallet = walletRepository.findByUserDetailUserId(userDetail.get().getUserId());
+                                if(wallet !=null) {
+                                	
+                                	 double existingAmount = wallet.getWalletAmount();
+                 	                 double requestAmount = paymentRequest.getWalletAmount();
+                 	                
+                 	                if (existingAmount >= requestAmount) {
+                 	                    wallet.setWalletAmount(existingAmount - requestAmount);
+                 	                    wallet.setUpdatedDateTime(LocalDateTime.now());
+                 	                    walletRepository.save(wallet);
+                 	                    
+                 		                orders.setWalletAmount(paymentRequest.getWalletAmount());
+                 		                orders.setPaymentStatus(GeneralConstant.PAY_SUCCESS.toString());
+           	                            String orderId = generateOrderId(orders.getOrderedDateTime());
+           	                            orders.setOrderId(orderId);
+
+                 	                }
+                 	                else {
+                	                    throw new ApplicationException(HttpStatus.BAD_REQUEST, 1004, LocalDateTime.now(), "Insufficient wallet balance");
+
+                 	                }
+                 	                    
+                                }else {
+                        			throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Wallet not found");
+
+                                }
+                        }else {
+                			throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "User not found");
+
+                        }
+	            } 
+	            
+	            // Else, if Cash is used
+	            else if (paymentRequest.getCashAmount() > 0.0) {
+	            	
+	                orders.setCashAmount(paymentRequest.getCashAmount());
+	                orders.setPaymentStatus(GeneralConstant.PAY_SUCCESS.toString());
+                    String orderId = generateOrderId(orders.getOrderedDateTime());
+                    orders.setOrderId(orderId);
+	            } 
+	            // Else, no valid payment method used
+	            else {
+	                throw new ApplicationException(HttpStatus.BAD_REQUEST, 1002, LocalDateTime.now(), "No valid payment method provided");
+	            }
+
+
+
+	            orderRepository.save(orders);
+
+	            orderSummary.setOrderDetails(orderDetailsRes);
+	            orderSummary.setOrders(orders);
+	            return orderSummary;
+	        } else {
+	            throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "Invalid user");
+	        }
+	    } else {
+	        throw new ApplicationException(HttpStatus.BAD_REQUEST, 1001, LocalDateTime.now(), "No data present");
+	    }
+	}*/
+
+	
+
 
 
 

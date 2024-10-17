@@ -28,7 +28,8 @@ public class SecurityConfig {
                     "/api/v1/user/verifyUserName",
                     "/api/v1/user/getotpToPhone",
                     "/api/v1/user/login",
-                    "/api/v1/user/verifyUsernameAndGenerateOtp"
+                    "/api/v1/user/adminLogin",                   
+                    "/api/v1/user/verifyUsernameAndGenerateOtp"                
                     
       
                 )

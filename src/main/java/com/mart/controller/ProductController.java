@@ -62,4 +62,10 @@ public class ProductController {
 	List<Product> activeProducts = productService.getActiveProducts(locationId);
 	        return new ResponseEntity<>(activeProducts, HttpStatus.OK);
 	    }
+	
+	
+	@PostMapping("/validateImage")
+	public ResponseEntity<Object> validateImageFile(@RequestPart MultipartFile image) {
+		return new ResponseEntity<>(productService.validateImageFile(image), HttpStatus.OK);
+	}
 }

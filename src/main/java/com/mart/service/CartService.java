@@ -38,7 +38,7 @@ public class CartService {
 	
 
 
-	public List<Cart> getAllProductsByUserId(Long userId) throws ApplicationException {
+	/*public List<Cart> getAllProductsByUserId(Long userId) throws ApplicationException {
 	 Optional<UserDetail> userDetail =	userDetailRepository.findById(userId);
 	   if(userDetail.isPresent()) {
 		   List<Cart> carts =   cartRepository.findByUserDetail(userDetail);
@@ -49,11 +49,23 @@ public class CartService {
 
 	   }
 	    
+	}*/
+	
+	
+	public List<Cart> getAllProductsByUserId(Long userId) throws ApplicationException {
+	    Optional<UserDetail> userDetail = userDetailRepository.findById(userId);
+	    
+	    if (userDetail.isPresent()) {
+	        List<Cart> carts = cartRepository.findByUserDetailAndProductActive(userDetail.get(), true);
+	        return carts;
+	    } else {
+	        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "User Not found");
+	    }
 	}
+
 	
 	
-	
-	public Cart addProductByCart(Cart cartReq) throws ApplicationException {
+	/*public Cart addProductByCart(Cart cartReq) throws ApplicationException {
 
 		Cart cart = new Cart();
 	    if (cartReq != null) {
@@ -85,6 +97,48 @@ public class CartService {
 	    } else {
 	        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Data Not Found");
 	    }
+	}*/
+
+	
+	public Cart addProductByCart(Cart cartReq) throws ApplicationException {
+
+	    if (cartReq == null) {
+	        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Data Not Found");
+	    }
+
+	    UserDetail userDetail = userDetailRepository.findById(cartReq.getUserDetail().getUserId())
+	        .orElseThrow(() -> new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "User Not Found"));
+
+	    Product product = productRepository.findById(cartReq.getProduct().getProductId())
+	        .orElseThrow(() -> new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Product Not Found"));
+
+	    Optional<Cart> existingCartItem = cartRepository.findByUserDetailUserIdAndProductProductId(
+	        cartReq.getUserDetail().getUserId(), cartReq.getProduct().getProductId());
+
+	    if (existingCartItem.isPresent()) {
+	        Cart existingCart = existingCartItem.get();
+
+	        if (existingCart.isProductActive()) {
+	            throw new ApplicationException(HttpStatus.CONFLICT, 1002, LocalDateTime.now(), "Product already exists in the cart and is active");
+	        } else {
+	            existingCart.setProductActive(true);
+	            existingCart.setQuantity(cartReq.getQuantity());  
+	            existingCart.setTotalPrice(cartReq.getTotalPrice());  
+	            existingCart.setUpdatedDateTime(LocalDateTime.now());  
+	            return cartRepository.save(existingCart);  
+	        }
+	    }
+
+	    Cart cart = new Cart();
+	    cart.setUnitPrice(cartReq.getUnitPrice());
+	    cart.setQuantity(cartReq.getQuantity());
+	    cart.setTotalPrice(cartReq.getTotalPrice());
+	    cart.setProductActive(true);  
+	    cart.setUserDetail(userDetail);
+	    cart.setProduct(product);
+	    cart.setUpdatedDateTime(LocalDateTime.now());
+
+	    return cartRepository.save(cart);  
 	}
 
 

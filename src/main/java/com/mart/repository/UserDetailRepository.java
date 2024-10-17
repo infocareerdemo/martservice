@@ -9,7 +9,9 @@ import com.mart.entity.UserDetail;
 
 public interface UserDetailRepository extends JpaRepository<UserDetail, Long>{
 
-	UserDetail findByUserName(String userName);	
+	UserDetail findByUserName(String userName);
+
+	UserDetail findByPhone(Long phone);	
 
 //	UserDetail findByPhone(Long phone);
 	

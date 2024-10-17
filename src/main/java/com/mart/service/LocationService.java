@@ -28,15 +28,21 @@ public class LocationService {
 		}
 	   Location location = new Location();
 		if(locationReq.getLocationId() == null) {
+			location.setLastUpdatedBy(locationReq.getLastUpdatedBy());
+			location.setLocationId(locationReq.getLocationId());
 			location.setLocationName(locationReq.getLocationName());
 			location.setCompanyName(locationReq.getCompanyName());
+			location.setLastUpdatedDt(LocalDateTime.now());
 			locationRepository.save(location);
 			
 		}else {
 		  Optional<Location> existingLocation = locationRepository.findById(locationReq.getLocationId());
 			if(existingLocation.isPresent()) {
+				location.setLastUpdatedBy(locationReq.getLastUpdatedBy());
+				location.setLocationId(locationReq.getLocationId());
 				location.setLocationName(locationReq.getLocationName());
 				location.setCompanyName(locationReq.getCompanyName());
+				location.setLastUpdatedDt(LocalDateTime.now());
 				locationRepository.save(location);
 			}
 		}

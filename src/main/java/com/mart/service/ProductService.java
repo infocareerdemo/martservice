@@ -1,10 +1,13 @@
 package com.mart.service;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
+import javax.imageio.ImageIO;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -142,7 +145,20 @@ public class ProductService {
 	public List<Product> getActiveProducts(Long locationId) {
 		return productRepository.findByLocationLocationIdAndProductActive(locationId, true);
 	}
-	
 
+	public boolean validateImageFile(MultipartFile multipartFile) {
+		BufferedImage image;
+		try {
+			image = ImageIO.read(multipartFile.getInputStream());
+			if (image == null) {
+				return false;
+			} else {
+				return true;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 
 }

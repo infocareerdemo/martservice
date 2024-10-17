@@ -128,6 +128,7 @@ public class WalletService {
 	                    if (order.isPresent()) {
 	                        order.get().setPaymentStatus(GeneralConstant.PAY_SUCCESS.toString());
 	                        order.get().setWalletAmount(requestAmount);
+	                        order.get().setCashAmount(walletRequest.getCashAmount());
 	                        String orderId = generateOrderId(order.get().getOrderedDateTime());
 	                        order.get().setOrderId(orderId);
 	                        orderRepository.save(order.get());
