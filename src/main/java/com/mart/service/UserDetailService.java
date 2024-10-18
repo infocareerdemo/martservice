@@ -108,7 +108,7 @@ public class UserDetailService {
 	}
 
 
-	public boolean  verifyUsernameAndGenerateOtp(LoginDto loginDto, HttpServletResponse response) throws Exception{
+	/*public boolean  verifyUsernameAndGenerateOtp(LoginDto loginDto, HttpServletResponse response) throws Exception{
 		FunUtils funUtils = new FunUtils();
 		int otp = funUtils.generateOtp();
 		
@@ -128,11 +128,34 @@ public class UserDetailService {
 	   }
 		
 		return true;
-	}
+	}*/
 
+	public boolean verifyEmployeeCodeAndGenerateOtp(LoginDto loginDto,
+			HttpServletResponse response) throws ApplicationException{
+		
+		FunUtils funUtils = new FunUtils();
+		int otp = funUtils.generateOtp();
+		
+		
+		UserDetail userDetails =	userDetailRepository.findByEmployeeCode(loginDto.getEmployeeCode());
+		if(userDetails !=null) {
+			   Long phone = userDetails.getPhone();
+
+			   userDetails.setPhoneOtp(otp);
+			   userDetails.setUpdatedDateTime(LocalDateTime.now());
+			   
+			   smsNotificationService.sendOtpToMobile(phone, (long) otp);
+			   userDetailRepository.save(userDetails);
+		}else {
+	           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "User Not Found");
+		}
+		return true;
+	}	
+	  
+	
 
 	public UserDetail verifyLoginCredential(LoginDto loginDto, HttpServletResponse response) throws Exception{		
-	 UserDetail userDetail = userDetailRepository.findByUserName(loginDto.getUsername());	 
+	 UserDetail userDetail = userDetailRepository.findByEmployeeCode(loginDto.getEmployeeCode());
 	    if(userDetail !=null) {	    	
 	         if(userDetail.getPhoneOtp() == loginDto.getPhoneOTP()) {	        	 
 	         }else {
@@ -185,7 +208,9 @@ public class UserDetailService {
 			return userDetail;
 
 		
-	}	
-	  
+	}
+
+
+
 
 }

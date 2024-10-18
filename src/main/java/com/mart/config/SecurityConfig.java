@@ -29,7 +29,11 @@ public class SecurityConfig {
                     "/api/v1/user/getotpToPhone",
                     "/api/v1/user/login",
                     "/api/v1/user/adminLogin",                   
-                    "/api/v1/user/verifyUsernameAndGenerateOtp"                
+                    "/api/v1/user/verifyEmployeeCodeAndGenerateOtp" ,
+                    "/api/v1/userlist/upload",
+                    "/api/v1/userlist/moveUsers"
+
+                    
                     
       
                 )

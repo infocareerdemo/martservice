@@ -1,8 +1,13 @@
 package com.mart.dto;
 
 
+import com.mart.entity.Location;
 import com.mart.entity.Role;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.Data;
 
 @Data
@@ -17,5 +22,13 @@ public class UserDetailDto {
 	    private Boolean phoneVerified;
 	    private String address;
 	    private Role role;
+	    private String employeeCode;
+	    
+	    private String name;
+	
+		private Location location;
+
+		private boolean userActive;
+	    
 
 }

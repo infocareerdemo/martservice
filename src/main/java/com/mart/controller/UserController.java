@@ -70,11 +70,17 @@ public class UserController {
 	}
 
 	
-	@PostMapping("/verifyUsernameAndGenerateOtp")
+	/*@PostMapping("/verifyUsernameAndGenerateOtp")
 	public ResponseEntity<Object> verifyUsernameAndGenerateOtp(@RequestBody LoginDto loginDto, HttpServletResponse response) throws Exception{		
 		return new ResponseEntity<Object>(userDetailService.verifyUsernameAndGenerateOtp(loginDto, response), HttpStatus.OK);
 		
+	}*/
+	@PostMapping("/verifyEmployeeCodeAndGenerateOtp")
+	public ResponseEntity<Object> verifyEmployeeCodeAndGenerateOtp(@RequestBody LoginDto loginDto, HttpServletResponse response) throws Exception{		
+		return new ResponseEntity<Object>(userDetailService.verifyEmployeeCodeAndGenerateOtp(loginDto, response), HttpStatus.OK);
+		
 	}
+	
 	
 	
 

@@ -36,6 +36,7 @@ import com.mart.config.GeneralConstant;
 import com.mart.dto.ItemCount;
 import com.mart.dto.OrderDashboard;
 import com.mart.dto.OrderRequest;
+import com.mart.dto.OrderStatusDto;
 import com.mart.dto.OrderSummary;
 import com.mart.dto.PaymentRequest;
 import com.mart.dto.WalletRequest;
@@ -632,6 +633,48 @@ public class OrderService {
 
 	    return null;
 	}
+		
+	
+
+	public String updateOrderStatus(OrderStatusDto orderStatusDto) throws ApplicationException{
+		if(orderStatusDto !=null) {
+		   Orders order =	orderRepository.findByOrderId(orderStatusDto.getOrderId());
+			   if(order !=null) {
+				
+				   order.setCashOrderStatus(orderStatusDto.isCashOrderStatus());
+				   orderRepository.save(order);
+				   return "Cash Order Status Updated!";
+
+			   }else {
+		           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Order Not Found");
+
+			   }
+		}else {
+	           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Data Not Found");
+
+		}
+	}
+
+
+	public String updateDeliveredStatus(OrderStatusDto orderStatusDto) throws ApplicationException{
+		if(orderStatusDto !=null) {
+			   Orders order =	orderRepository.findByOrderId(orderStatusDto.getOrderId());
+				   if(order !=null) {
+					
+					   order.setDeliveredStatus(orderStatusDto.isDeliveredStatus());
+					   orderRepository.save(order);
+					   return "Delivered Status Updated!";
+
+				   }else {
+			           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Order Not Found");
+
+				   }
+			}else {
+		           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Data Not Found");
+			}
+	}
+
+	
 
 }
 	

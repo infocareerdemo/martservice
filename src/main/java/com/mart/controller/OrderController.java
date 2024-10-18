@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mart.dto.OrderRequest;
 import com.mart.dto.OrderSaveRequest;
+import com.mart.dto.OrderStatusDto;
 import com.mart.dto.OrderWithPaymentRequest;
 import com.mart.dto.PaymentRequest;
 import com.mart.dto.WalletRequest;
@@ -107,6 +108,18 @@ public class OrderController {
 		return new ResponseEntity<>(in, headers, HttpStatus.OK);
 	}
 	
+	
+	@PostMapping("/updateOrderStatus")
+	public ResponseEntity<Object> updateOrderStatus(@RequestBody OrderStatusDto orderStatusDto) throws Exception{		
+		return new ResponseEntity<Object>(orderService.updateOrderStatus(orderStatusDto), HttpStatus.OK);
+		
+	}
+	
+	@PostMapping("/updateDeliveredStatus")
+	public ResponseEntity<Object> updateDeliveredStatus(@RequestBody OrderStatusDto orderStatusDto) throws Exception{		
+		return new ResponseEntity<Object>(orderService.updateDeliveredStatus(orderStatusDto), HttpStatus.OK);
+		
+	}
 }
 	
 	 //Save Order details

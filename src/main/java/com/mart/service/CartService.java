@@ -37,20 +37,6 @@ public class CartService {
 	ProductRepository productRepository;
 	
 
-
-	/*public List<Cart> getAllProductsByUserId(Long userId) throws ApplicationException {
-	 Optional<UserDetail> userDetail =	userDetailRepository.findById(userId);
-	   if(userDetail.isPresent()) {
-		   List<Cart> carts =   cartRepository.findByUserDetail(userDetail);
-	        return carts;
-
-	   }else {
-			throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "User Not found");
-
-	   }
-	    
-	}*/
-	
 	
 	public List<Cart> getAllProductsByUserId(Long userId) throws ApplicationException {
 	    Optional<UserDetail> userDetail = userDetailRepository.findById(userId);
@@ -64,40 +50,6 @@ public class CartService {
 	}
 
 	
-	
-	/*public Cart addProductByCart(Cart cartReq) throws ApplicationException {
-
-		Cart cart = new Cart();
-	    if (cartReq != null) {
-
-	        UserDetail userDetail = userDetailRepository.findById(cartReq.getUserDetail().getUserId())
-	            .orElseThrow(() -> new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "User Not Found"));
-
-	        Product product = productRepository.findById(cartReq.getProduct().getProductId())
-	            .orElseThrow(() -> new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Product Not Found"));
-
-	        Optional<Cart> existingCartItem = cartRepository.findByUserDetailUserIdAndProductProductId(
-	            cartReq.getUserDetail().getUserId(), cartReq.getProduct().getProductId());
-
-	        if (existingCartItem.isPresent()) {
-	            throw new ApplicationException(HttpStatus.CONFLICT, 1002, LocalDateTime.now(), "Product already exists in the cart");
-	        }
-
-	        
-	        cart.setUnitPrice(cartReq.getUnitPrice());
-	        cart.setQuantity(cartReq.getQuantity());
-	        cart.setTotalPrice(cartReq.getTotalPrice());
-	        cart.setProductActive(cartReq.isProductActive());
-	        cart.setUserDetail(userDetail);
-	        cart.setProduct(product);
-	        cart.setUpdatedDateTime(LocalDateTime.now());
-
-	        return cartRepository.save(cart);
-
-	    } else {
-	        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Data Not Found");
-	    }
-	}*/
 
 	
 	public Cart addProductByCart(Cart cartReq) throws ApplicationException {

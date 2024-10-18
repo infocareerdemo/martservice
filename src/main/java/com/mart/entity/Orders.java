@@ -68,4 +68,11 @@ public class Orders {
 	@Column(name = "razorpay_amount")
 	private double razorpayAmount;
 	
+	@Column(name = "cash_order_status",nullable = true)
+	private boolean cashOrderStatus;
+	
+	@Column(name = "delivered_status",nullable = true)
+	private boolean deliveredStatus;
+	
+	
 }

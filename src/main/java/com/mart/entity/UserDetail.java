@@ -22,13 +22,14 @@ public class UserDetail {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "user_id") // Specify the column name for the primary key
+	@Column(name = "user_id") 
 	private Long userId;
 
-//	@NotBlank(message = "Name is mandatory")
-//	@Size(max = 100, message = "Name must be less than 100 characters") 
 	@Column(name = "user_name", length = 100 ,  unique = true, nullable = true)         
 	private String userName;
+	
+	@Column(name = "employee_code", unique = true)
+	private String employeeCode;
 
 	@Column(name = "name", length = 100 , nullable = true)         
 	private String name;
@@ -36,8 +37,6 @@ public class UserDetail {
 	@Column(name = "password")
 	private String passWord;
 
-	
-//	@NotNull(message = "Phone is mandatory")
 	@Column(name = "phone", length = 15, unique = true, nullable = true)
 	private Long phone;
 
@@ -53,25 +52,19 @@ public class UserDetail {
 	@Column(name = "email_id", unique = true)
 	private String emailId;
 
-
 	@Column(name = "email_otp" , nullable = true)
 	private int emailOtp;
-
 	
 	@Column(name = "email_otp_expiry", nullable = true)
-	private LocalDateTime emailOtpExpiry;
-	
+	private LocalDateTime emailOtpExpiry;	
 	
 	@Column(name = "email_verified", nullable = true)
 	@ColumnDefault("false")
 	private boolean emailVerified;
 
-	
-//	@NotNull(message = "address is mandatory")
 	@Column(name = "address" , nullable = true)
 	private String address;
 
-	// user_role pointing to role_id column of role table
 	@ManyToOne
 	@JoinColumn(name = "user_role", referencedColumnName = "role_id")
 	private Role role;
@@ -90,5 +83,9 @@ public class UserDetail {
 	@JoinColumn(name = "user_location", referencedColumnName = "location_id" , nullable = true)
 	private Location location;
 	
+	@Column(name = "user_active",nullable = true)
+	private boolean userActive;
 	
+	@Column(name = "wallet_amount" ,nullable = true)
+	private double walletAmount;
 }
