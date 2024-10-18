@@ -6,9 +6,11 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 
+import org.hibernate.Hibernate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,9 +18,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.mart.entity.Category;
 import com.mart.entity.Location;
 import com.mart.entity.Product;
 import com.mart.exception.ApplicationException;
+import com.mart.repository.CategoryRepository;
 import com.mart.repository.LocationRepository;
 import com.mart.repository.ProductRepository;
 
@@ -32,6 +36,10 @@ public class ProductService {
 	
 	@Autowired
 	LocationRepository locationRepository;
+	
+	@Autowired
+     CategoryRepository categoryRepository;
+
 
 	
 	public String saveOrUpdateProduct(Product productReq, MultipartFile productImg) throws Exception{	
@@ -160,5 +168,22 @@ public class ProductService {
 		}
 		return false;
 	}
+    
+    
+    public List<Product> getProductsByCategory(Long categoryId) {
+        return productRepository.findByCategoriesCategoryId(categoryId);
+    }
 
+    public List<Category> getCategoriesByProductId(Long productId) {
+        return categoryRepository.findByProductsProductId(productId);
+    }
+
+    
+    public Optional<Product> getProductById(Long id) {
+        return productRepository.findById(id);
+    }
+   
+
+    
+    
 }

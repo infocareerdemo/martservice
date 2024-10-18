@@ -2,12 +2,15 @@ package com.mart.controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.mart.entity.Category;
 import com.mart.entity.Product;
 import com.mart.service.ProductService;
 
@@ -68,4 +72,24 @@ public class ProductController {
 	public ResponseEntity<Object> validateImageFile(@RequestPart MultipartFile image) {
 		return new ResponseEntity<>(productService.validateImageFile(image), HttpStatus.OK);
 	}
+
+
+	 @GetMapping("/getAllproductsByCategoryId")
+	    public List<Product> getProductsByCategory(@RequestParam Long categoryId) {
+	        return productService.getProductsByCategory(categoryId);
+	    }
+	 
+	 
+	 @GetMapping("/getAllCategoriesByProductId")
+	    public List<Category> getCategoriesByProductId(@RequestParam Long productId) {
+	        return productService.getCategoriesByProductId(productId);
+	    }
+	 
+	 
+	 @GetMapping("/getProducts")
+	 public Optional<Product> getProduct(@RequestParam Long id) {
+	        return productService.getProductById(id);
+	    }
+	
+	
 }
