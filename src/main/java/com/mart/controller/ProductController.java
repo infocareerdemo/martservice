@@ -86,7 +86,7 @@ public class ProductController {
 	    }
 	 
 	 
-	 @GetMapping("/getProducts")
+	 @GetMapping("/getAllProducts")
 	 public Optional<Product> getProduct(@RequestParam Long id) {
 	        return productService.getProductById(id);
 	    }

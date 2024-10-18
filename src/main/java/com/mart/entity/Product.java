@@ -69,11 +69,15 @@ public class Product {
 	
 	
 	
-
-	 @ManyToMany(fetch = FetchType.LAZY, mappedBy = "products")
-	 private Set<Category> categories = new HashSet<>();
+//     1. Method
+	 /*@ManyToMany(fetch = FetchType.LAZY, mappedBy = "products")
+	 private Set<Category> categories = new HashSet<>();*/
 	 
 	 
-	 
+	 @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)@JoinTable(
+	            name = "product_category",
+	            joinColumns = @JoinColumn(name = "product_id"),
+	            inverseJoinColumns = @JoinColumn(name = "category_id")
+	    )private Set<Category> categories = new HashSet<>();
 
 }

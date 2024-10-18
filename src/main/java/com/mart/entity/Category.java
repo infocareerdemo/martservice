@@ -31,15 +31,17 @@ public class Category {
 	@Column(name = "category_name",nullable = false)
 	 private String categoryName;
 	  
-	   @ManyToMany(fetch = FetchType.LAZY)
+	  /* @ManyToMany(fetch = FetchType.LAZY)
 	    @JoinTable(
 	        name = "product_category",
 	        joinColumns = @JoinColumn(name = "category_id"),
 	        inverseJoinColumns = @JoinColumn(name = "product_id")
 	    )
-	    private Set<Product> products = new HashSet<>();
+	    private Set<Product> products = new HashSet<>();*/
 	   
 	  
-	   
+
+	    @ManyToMany(mappedBy = "categories", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	    private Set<Product> products = new HashSet<>();  
 	   
 }
