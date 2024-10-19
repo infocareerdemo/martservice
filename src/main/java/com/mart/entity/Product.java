@@ -2,7 +2,10 @@ package com.mart.entity;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -25,7 +28,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "products") // Specify the table name
+@Table(name = "products") 
 public class Product {
 
 	@Id
@@ -66,18 +69,47 @@ public class Product {
 	
 	@Column(name = "product_updated_by", nullable = false)
 	private Long productUpdatedBy;
-	
-	
-	
-//     1. Method
-	 /*@ManyToMany(fetch = FetchType.LAZY, mappedBy = "products")
-	 private Set<Category> categories = new HashSet<>();*/
-	 
-	 
-	 @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)@JoinTable(
-	            name = "product_category",
-	            joinColumns = @JoinColumn(name = "product_id"),
-	            inverseJoinColumns = @JoinColumn(name = "category_id")
-	    )private Set<Category> categories = new HashSet<>();
+
+    
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "product_category",
+        joinColumns = @JoinColumn(name = "product_id"),
+        inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private Set<Category> categories;
+    
+    
+    
+    
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Product product = (Product) o;
+        return Objects.equals(productId, product.productId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(productId);
+    }
+    
+    
+    @Override
+    public String toString() {
+        return "Product{" +
+                "productId=" + productId +
+                ", productName='" + productName + '\'' +
+                ", productDescription='" + productDescription + '\'' +
+                ", productPrice=" + productPrice +
+                ", productGST=" + productGST +
+                ", productActive=" + productActive +
+                ", location=" + location + // Exclude lazy-loaded fields like categories
+                ", updatedDate=" + updatedDate +
+                ", productUpdatedBy=" + productUpdatedBy +
+                '}';
+    }
 
 }

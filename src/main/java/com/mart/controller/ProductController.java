@@ -12,14 +12,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.mart.dto.CategoryResponseDto;
+import com.mart.dto.ProductRequestDto;
+import com.mart.dto.ProductResponseDto;
 import com.mart.entity.Category;
 import com.mart.entity.Product;
+import com.mart.exception.ApplicationException;
+import com.mart.repository.ProductRepository;
 import com.mart.service.ProductService;
 
 import jakarta.transaction.Transactional;
@@ -30,6 +36,9 @@ public class ProductController {
 
 	@Autowired
 	ProductService productService;
+	
+	@Autowired
+	ProductRepository productRepository;
 
 	@PostMapping("/saveOrUpdateProduct")
 	public ResponseEntity<Object> saveOrUpdateProduct(@ModelAttribute Product productReq , @RequestPart(required = false) MultipartFile productImg) throws Exception{	
@@ -85,11 +94,30 @@ public class ProductController {
 	        return productService.getCategoriesByProductId(productId);
 	    }
 	 
-	 
-	 @GetMapping("/getAllProducts")
-	 public Optional<Product> getProduct(@RequestParam Long id) {
-	        return productService.getProductById(id);
-	    }
 	
+		
+     @PostMapping("/createProductWithCategory")
+	 public ResponseEntity<Object> createProductWithCategory(@ModelAttribute ProductRequestDto productReq,@RequestPart(required = false) MultipartFile productImg) throws Exception {
+		return new ResponseEntity<Object>(productService.createProductWithCategory(productReq,productImg), HttpStatus.OK);
+		}		
+		
+		
+     @GetMapping("/{id}")
+	 @Transactional
+	 public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long id) {			
+			Optional<Product> product = productRepository.findById(id);
+				if(product.isPresent()) {
+		            System.out.println("Categories: " + product.get().getCategories());
+
+					ProductResponseDto productResponseDto = productService.convertToDTO(product.get());
+					return ResponseEntity.ok(productResponseDto);
+				}else {
+			        return ResponseEntity.notFound().build();
 	
+				}
+				
+			}
+		
+
+			
 }

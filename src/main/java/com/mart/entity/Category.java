@@ -2,7 +2,10 @@ package com.mart.entity;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -19,29 +22,32 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "category")
+@Table(name = "categories")
 public class Category {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "category_id")
 	 private Long   categoryId;
-	
-	 
+		 
 	@Column(name = "category_name",nullable = false)
 	 private String categoryName;
 	  
-	  /* @ManyToMany(fetch = FetchType.LAZY)
-	    @JoinTable(
-	        name = "product_category",
-	        joinColumns = @JoinColumn(name = "category_id"),
-	        inverseJoinColumns = @JoinColumn(name = "product_id")
-	    )
-	    private Set<Product> products = new HashSet<>();*/
-	   
-	  
 
-	    @ManyToMany(mappedBy = "categories", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	    private Set<Product> products = new HashSet<>();  
-	   
+    @ManyToMany(mappedBy = "categories")
+    private Set<Product> products;
+    
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Category category = (Category) o;
+        return Objects.equals(categoryId, category.categoryId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(categoryId);
+    }
 }
