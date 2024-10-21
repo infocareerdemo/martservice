@@ -40,6 +40,8 @@ public class ProductResponseDto {
     public static class CategoryResponseDto {  	
     private Long   categoryId;    	 
     private String categoryName;
+	  private byte[] categoryImage;
+
     }  
 	
  

@@ -114,6 +114,8 @@ public class WalletService {
 	        Optional<UserDetail> user = userDetailRepository.findById(walletRequest.getUserId());
 	        if (user.isPresent()) {
 	            Wallet wallet = walletRepository.findByUserDetailUserId(walletRequest.getUserId());
+	            
+	            
 	            if (wallet != null) {
 	                
 	                double existingAmount = wallet.getWalletAmount();
@@ -139,19 +141,15 @@ public class WalletService {
 	                    }
 	                    
 	                    
-	                    // Check if product IDs exist and update productActive flag in the Cart
 	                    if (walletRequest.getProductIds() != null && !walletRequest.getProductIds().isEmpty()) {
 	                        List<Long> productIds = walletRequest.getProductIds();
 	                        
-	                        // Fetch carts with matching product IDs for the current user
 	                        List<Cart> carts = cartRepository.findByUserDetailUserIdAndProductProductIdIn(walletRequest.getUserId(), productIds);
 	                        
 	                        if (!carts.isEmpty()) {
-	                            // Set productActive to false for each cart entry with matching productId
 	                            for (Cart cart : carts) {
 	                                cart.setProductActive(false);
 	                            }
-	                            // Save updated cart entities
 	                            cartRepository.saveAll(carts);
 	                        }
 	                    }
@@ -165,6 +163,8 @@ public class WalletService {
 	            } else {
 	                throw new ApplicationException(HttpStatus.BAD_REQUEST, 1000, LocalDateTime.now(), "Wallet not found for this user");
 	            }
+	                
+	        
 	        } else {
 	            throw new ApplicationException(HttpStatus.NOT_FOUND, 1002, LocalDateTime.now(), "User not found");
 	        }
@@ -175,6 +175,63 @@ public class WalletService {
 	    
 	}
 
+	//new paywallet method
+	public WalletResponse payByWallett(WalletRequest walletRequest) throws ApplicationException {
+	    if (walletRequest == null) {
+	        throw new ApplicationException(HttpStatus.BAD_REQUEST, 1001, LocalDateTime.now(), "Invalid wallet request data");
+	    }
+
+	    Optional<UserDetail> userDetailOptional = userDetailRepository.findById(walletRequest.getUserId());
+	    if (userDetailOptional.isEmpty()) {
+	        throw new ApplicationException(HttpStatus.NOT_FOUND, 1002, LocalDateTime.now(), "User not found");
+	    }
+
+	    UserDetail userDetail = userDetailOptional.get();
+
+	    double existingAmount = userDetail.getWalletAmount();
+	    double requestAmount = walletRequest.getWalletAmount();
+
+	    if (existingAmount < requestAmount) {
+	        throw new ApplicationException(HttpStatus.BAD_REQUEST, 1004, LocalDateTime.now(), "Insufficient wallet balance");
+	    }
+	    
+	    userDetail.setWalletAmount(existingAmount - requestAmount);
+	    userDetail.setUpdatedDateTime(LocalDateTime.now());
+	    userDetailRepository.save(userDetail); 
+
+
+	    Optional<Orders> orderOptional = orderRepository.findById(walletRequest.getOrderId());
+	    if (orderOptional.isEmpty()) {
+	        throw new ApplicationException(HttpStatus.NOT_FOUND, 1003, LocalDateTime.now(), "Order not found");
+	    }
+
+	    Orders order = orderOptional.get();
+	    order.setPaymentStatus(GeneralConstant.PAY_SUCCESS.toString());
+	    order.setWalletAmount(requestAmount);
+	    order.setCashAmount(walletRequest.getCashAmount());
+	    String orderId = generateOrderId(order.getOrderedDateTime());
+	    order.setOrderId(orderId);
+	    orderRepository.save(order);
+
+	    if (walletRequest.getProductIds() != null && !walletRequest.getProductIds().isEmpty()) {
+	        List<Long> productIds = walletRequest.getProductIds();
+	        List<Cart> carts = cartRepository.findByUserDetailUserIdAndProductProductIdIn(walletRequest.getUserId(), productIds);
+	        
+	        if (!carts.isEmpty()) {
+	            for (Cart cart : carts) {
+	                cart.setProductActive(false);
+	            }
+	            cartRepository.saveAll(carts);
+	        }
+	    }
+
+	    WalletResponse walletResponse = new WalletResponse();
+	    walletResponse.setSuccess(true);
+	    return walletResponse;
+	}
+
+	
+	
 
 	public WalletSummary getOrderDetails(Long userId, Long orderId) throws ApplicationException {
 	    

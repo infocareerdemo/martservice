@@ -26,7 +26,6 @@ public class LocationController {
 		
 	}
 	
-
 	
 	@GetMapping("/getAllLocation")
 	public ResponseEntity<Object> getAllLocation() {

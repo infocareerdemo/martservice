@@ -12,6 +12,8 @@ public class CategoryResponseDto {
 	
 	private Long   categoryId;    	 
     private String categoryName;
+	  private byte[] categoryImage;
+
 	Set<ProductResponseDto> products;
 	
 	
@@ -36,6 +38,11 @@ public class CategoryResponseDto {
 		private LocalDateTime updatedDate;
 		
 		private Long productUpdatedBy;
+		
+		 private boolean productCategory;
+		 
+		   private Long   categoryId;    	 
+		    private String categoryName;
 	}
 
 }

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mart.dto.PaymentRequest;
+import com.mart.dto.WalletRequest;
 import com.mart.entity.RazorpayPayment;
 import com.mart.exception.ApplicationException;
 import com.mart.service.PaymentService;
@@ -22,14 +23,6 @@ public class PaymentController {
 	@Autowired
 	PaymentService paymentService;
 	
-	
-
-	/*@PostMapping("/createOrder")
-	public ResponseEntity<Object> createOrder(@RequestParam Long id, @RequestParam Long oid) throws ApplicationException {
-		return new ResponseEntity<Object>(paymentService.createOrder(id, oid), HttpStatus.OK);
-	}*/
-	
-
 	@PostMapping("/createOrder")
 	public ResponseEntity<Object> createOrder(@RequestParam Long id, @RequestParam Long oid,@RequestParam double razorpayAmount) throws ApplicationException {
 		return new ResponseEntity<Object>(paymentService.createOrder(id, oid,razorpayAmount), HttpStatus.OK);
@@ -40,9 +33,23 @@ public class PaymentController {
 		return new ResponseEntity<Object>(paymentService.isPaymentSuccess(razorpayPayment), HttpStatus.OK);
 	}
 	
-	
-	@PostMapping("/payAmount")
-	public ResponseEntity<Object> payWalletAndCash(@RequestParam Long userId, @RequestParam Long orderId, @RequestBody PaymentRequest paymentRequest) throws ApplicationException {
-		return new ResponseEntity<Object>(paymentService.payAmount(userId,orderId,paymentRequest), HttpStatus.OK);
+	@PostMapping("/payByWallet")
+	public ResponseEntity<Object> payByWallet(@RequestBody WalletRequest walletRequest) throws Exception {
+		return new ResponseEntity<Object>(paymentService.payByWallet(walletRequest), HttpStatus.OK);
 	}
+	
 }
+
+
+/*@PostMapping("/createOrder")
+public ResponseEntity<Object> createOrder(@RequestParam Long id, @RequestParam Long oid) throws ApplicationException {
+	return new ResponseEntity<Object>(paymentService.createOrder(id, oid), HttpStatus.OK);
+}*/
+
+
+
+
+/*@PostMapping("/payAmount")
+public ResponseEntity<Object> payWalletAndCash(@RequestParam Long userId, @RequestParam Long orderId, @RequestBody PaymentRequest paymentRequest) throws ApplicationException {
+	return new ResponseEntity<Object>(paymentService.payAmount(userId,orderId,paymentRequest), HttpStatus.OK);
+}*/

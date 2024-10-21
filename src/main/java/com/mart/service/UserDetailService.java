@@ -211,6 +211,22 @@ public class UserDetailService {
 	}
 
 
+	public UserDetail verifyLoginUserDetail(String employeeCode, Long phoneOTP) {
+		 UserDetail userDetail = userDetailRepository.findByEmployeeCode(employeeCode);
+		    if(userDetail !=null) {	    	
+		         if(userDetail.getPhoneOtp() == phoneOTP) {
+		        	 
+		         }else {
+			            throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "Invalid Credentials");
+		         }	    	
+		    	
+		    }else {
+		        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "User Not Found");
+		    }
+			return userDetail;
+	}
+
+
 
 
 }

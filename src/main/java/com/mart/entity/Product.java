@@ -5,7 +5,10 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -29,6 +32,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "products") 
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Product {
 
 	@Id
@@ -59,6 +63,7 @@ public class Product {
 	
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "prodcut_location", referencedColumnName = "location_id", nullable = false)
+	//@JsonIgnore
 	private Location location;
 	
 	@Column(name = "product_image")
@@ -77,6 +82,7 @@ public class Product {
         joinColumns = @JoinColumn(name = "product_id"),
         inverseJoinColumns = @JoinColumn(name = "category_id")
     )
+    @JsonManagedReference
     private Set<Category> categories;
     
     

@@ -118,6 +118,11 @@ public class ProductController {
 				
 			}
 		
+     @GetMapping("/getAllProductsWithCategories")
+     public ResponseEntity<List<ProductResponseDto>> getAllProductsWithCategories() {
+         List<ProductResponseDto> products = productService.getAllProductsWithCategories();
+         return new ResponseEntity<>(products, HttpStatus.OK);
+     }
 
 			
 }

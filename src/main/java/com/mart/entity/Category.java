@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
@@ -16,6 +17,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
@@ -30,11 +32,18 @@ public class Category {
 	@Column(name = "category_id")
 	 private Long   categoryId;
 		 
-	@Column(name = "category_name",nullable = false)
+	@Column(name = "category_name",nullable = false,unique = true)
 	 private String categoryName;
+	
+	
+	
+	  @Column(name = "category_image")
+	  private byte[] categoryImage;
+	 
 	  
 
     @ManyToMany(mappedBy = "categories")
+    @JsonBackReference
     private Set<Product> products;
     
     

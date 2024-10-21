@@ -11,7 +11,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class ApplicationExceptionHandler { 
 	 
-	  @ExceptionHandler(ApplicationException.class)
+	@ExceptionHandler(ApplicationException.class)
+	public ResponseEntity<ApplicationException> globalExceptionHandler(ApplicationException ex){
+		return new ResponseEntity<ApplicationException>(ex,ex.getHttpStatus());
+	}
+	
+	
+	  /*@ExceptionHandler(ApplicationException.class)
 	    public ResponseEntity<Map<String, Object>> handleApplicationException(ApplicationException ex) {
 	        Map<String, Object> errorResponse = new HashMap<>();
 	        errorResponse.put("errorCode", ex.getErrorCode());
@@ -31,7 +37,7 @@ public class ApplicationExceptionHandler {
 	        errorResponse.put("timestamp", System.currentTimeMillis());
 
 	        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-	    }
+	    }*/
 	    
 	
 

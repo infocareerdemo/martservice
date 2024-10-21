@@ -3,7 +3,9 @@ package com.mart.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -291,7 +293,7 @@ public class CompanyAdminService {
 		}
 		
 	
-		public List<UserDetailDto> saveMultipleUser(List<UserDetailDto> userDetailListDto) throws ApplicationException {
+		public List<UserDetailDto> saveMultipleUserr(List<UserDetailDto> userDetailListDto) throws ApplicationException {
 		    List<UserDetailDto> userDetailsDtoList = new ArrayList<>();
 
 		    if (userDetailListDto != null && !userDetailListDto.isEmpty()) {
@@ -347,5 +349,83 @@ public class CompanyAdminService {
 		}
 
 
+		
+		
+		public List<UserDetailDto> saveMultipleUser(List<UserDetailDto> userDetailListDto) throws ApplicationException {
+		    List<UserDetailDto> savedUserDetailsDtoList = new ArrayList<>();
+		    List<Map<String, String>> existingUsers = new ArrayList<>(); // List to collect existing users with employeeCode and phoneNo
+
+		    if (userDetailListDto != null && !userDetailListDto.isEmpty()) {
+		        for (UserDetailDto user : userDetailListDto) {
+
+		            // Check if both employeeCode and phoneNo exist
+		            Optional<UserDetail> existingUser = userDetailRepository.findByEmployeeCodeAndPhone(user.getEmployeeCode(), user.getPhoneNo());
+		            if (existingUser.isPresent()) {
+		                // Collect existing user details (employeeCode and phoneNo)
+		                Map<String, String> existingUserDetails = new HashMap<>();
+		                existingUserDetails.put("employeeCode", existingUser.get().getEmployeeCode());
+		                existingUserDetails.put("phoneNo", String.valueOf(existingUser.get().getPhone())); // Convert long to String
+		                existingUsers.add(existingUserDetails); // Add to the existing users list
+		                continue; // Skip saving this user
+		            }
+
+
+		            // If not existing, save the new user
+		            UserDetail userDetail = new UserDetail();
+		            userDetail.setEmployeeCode(user.getEmployeeCode());
+		            userDetail.setUserName(user.getUserName());
+		            userDetail.setPhone(user.getPhoneNo());
+		            userDetail.setEmailId(user.getEmailId());
+		            userDetail.setUserActive(true);
+
+		            // Assign default role (roleId = 2L)
+		            Optional<Role> optionalRole = roleRepository.findById(2L);
+		            if (optionalRole.isPresent()) {
+		                userDetail.setRole(optionalRole.get());
+		            } else {
+		                throw new ApplicationException(HttpStatus.NOT_FOUND, 1002, LocalDateTime.now(), "Role not found for ID: 2");
+		            }
+
+		            // Assign default location (locationId = 1L)
+		            Optional<Location> optionalLocation = locationRepository.findById(1L);
+		            if (optionalLocation.isPresent()) {
+		                userDetail.setLocation(optionalLocation.get());
+		            } else {
+		                throw new ApplicationException(HttpStatus.NOT_FOUND, 1003, LocalDateTime.now(), "Location not found for ID: 1");
+		            }
+
+		            // Save the user
+		            UserDetail savedUserDetail = userDetailRepository.save(userDetail);
+
+		            // Convert to DTO
+		            UserDetailDto savedUserDetailDto = new UserDetailDto();
+		            savedUserDetailDto.setEmployeeCode(savedUserDetail.getEmployeeCode());
+		            savedUserDetailDto.setPhoneNo(savedUserDetail.getPhone());
+		            savedUserDetailDto.setUserName(savedUserDetail.getUserName());
+		            savedUserDetailDto.setEmailId(savedUserDetail.getEmailId());
+		            savedUserDetailDto.setRole(savedUserDetail.getRole());
+		            savedUserDetailDto.setUserActive(savedUserDetail.isUserActive());
+		            savedUserDetailDto.setLocation(savedUserDetail.getLocation());
+		            
+
+		            savedUserDetailsDtoList.add(savedUserDetailDto);
+		        }
+
+		        // If existing users are found, throw an exception with their details
+		        if (!existingUsers.isEmpty()) {
+		            throw new ApplicationException(HttpStatus.CONFLICT, 1004, LocalDateTime.now(),
+		                "The following users already exist: " + existingUsers);
+		        }
+
+		    } else {
+		        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Users data not found");
+		    }
+
+		    return savedUserDetailsDtoList;
+		}
+
+
+		
+		
 
 }

@@ -31,11 +31,10 @@ public class SecurityConfig {
                     "/api/v1/user/adminLogin",                   
                     "/api/v1/user/verifyEmployeeCodeAndGenerateOtp" ,
                     "/api/v1/userlist/upload",
-                    "/api/v1/userlist/moveUsers"
-
-                    
-                    
-      
+                    "/api/v1/userlist/moveUsers",
+                    "/api/v1/product/getAllproductsByCategoryId",
+                    "/api/v1/product/getAllCategoriesByProductId"
+                     
                 )
                 .permitAll()
                 .anyRequest().authenticated())

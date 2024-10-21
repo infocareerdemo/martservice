@@ -12,6 +12,8 @@ public class WalletRequest {
 	    private Long orderId;
 	    private double cashAmount;
 	    
+	    private String razorPaymentStatus;
+	    
 	    private List<Long> productIds;
 	    private boolean productActive;
 	    

@@ -13,6 +13,12 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     List<Category> findByProductsProductId(Long productId);
 
-	Optional<Category> findByCategoryName(String categoryName);
+	Category  findByCategoryName(String categoryName);
+	
+	 List<Category> findAll();
+	 
+
+
+
 }
 

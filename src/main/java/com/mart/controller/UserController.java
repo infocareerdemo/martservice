@@ -1,5 +1,6 @@
 package com.mart.controller;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +69,9 @@ public class UserController {
 	    
 	    return new ResponseEntity<>(loginDto, headers,HttpStatus.OK);
 	}
+	
+
+
 
 	
 	/*@PostMapping("/verifyUsernameAndGenerateOtp")
@@ -134,6 +138,46 @@ public class UserController {
 		
 	}
 	
+	
+	
+	
+	@PostMapping("/userLogin")
+	public ResponseEntity<Object> loginn(@RequestBody Map<String, Object> loginParams, HttpServletResponse response) throws Exception {
+	    String employeeCode = (String) loginParams.get("employeeCode");    
+	    String phoneOtpString = (String) loginParams.get("phoneOTP");
+	    Long phoneOTP = null;
+
+	    if (phoneOtpString != null) {
+	        try {
+	            phoneOTP = Long.valueOf(phoneOtpString); 
+	        } catch (NumberFormatException e) {
+	            return new ResponseEntity<>("Invalid phone OTP format", HttpStatus.BAD_REQUEST);
+	        }
+	    } else {
+	        return new ResponseEntity<>("Phone OTP is required", HttpStatus.BAD_REQUEST);
+	    }
+
+	    UserDetail userDetail = userDetailService.verifyLoginUserDetail(employeeCode, phoneOTP);
+	    if (userDetail == null) {
+	        return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
+	    }
+
+	    String token = jwtUtil.createToken(userDetail.getUserName());
+	    response.setHeader("Authorization", "Bearer " + token);
+
+	    HttpHeaders headers = new HttpHeaders();
+	    headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
+
+	    Map<String, Object> responseMap = new HashMap<>();
+	    responseMap.put("userId", userDetail.getUserId());
+	    responseMap.put("username", userDetail.getUserName());
+	    responseMap.put("emailId", userDetail.getEmailId());
+	    responseMap.put("role", userDetail.getRole());
+	    responseMap.put("employeeCode", userDetail.getEmployeeCode());
+
+	    return new ResponseEntity<>(responseMap, headers, HttpStatus.OK);
+	}
+
 	
 	
 	
