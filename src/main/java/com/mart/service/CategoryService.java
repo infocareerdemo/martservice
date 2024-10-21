@@ -122,28 +122,25 @@ public class CategoryService {
 		 Optional<Category> existingCategory	= categoryRepository.findById(categoryRequestDto.getCategoryId());
 	        if (existingCategory.isPresent()) {
 	        	
-	        	Category category = existingCategory.get();
-		        category.setCategoryName(categoryRequestDto.getCategoryName());
+	        	 Category existinCategory = categoryRepository.findByCategoryName(categoryRequestDto.getCategoryName());
+	     		
+	             if (existinCategory !=null) {
+	                 throw new ApplicationException(HttpStatus.CONFLICT, 1001, LocalDateTime.now(), 
+	                         "Category name already exists with the same name");
+	             }
+	             
+	        	existingCategory.get().setCategoryName(categoryRequestDto.getCategoryName());
 
 		        if (categoryImage != null && !categoryImage.isEmpty()) {
-		            category.setCategoryImage(categoryImage.getBytes()); 
+		        	existingCategory.get().setCategoryImage(categoryImage.getBytes()); 
 		        }
-	        	
-		        Set<Product> products = new HashSet<>();
-		        for (Long productId : categoryRequestDto.getProductIds()) {
-		            productRepository.findById(productId).ifPresent(products::add);
-		        }
-		        category.setProducts(products);
+		        
+	            categoryRepository.save(existingCategory.get());
 
-		        for (Product product : products) {
-		            product.getCategories().add(category);
-		        }
-
-		        categoryRepository.save(category);
 		        
 	        }else {
-	        	 throw new ApplicationException(HttpStatus.CONFLICT, 1001, LocalDateTime.now(), 
-		                    "Category name already exists with the same name");
+	        	 throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), 
+		                    "data not found");
 	        }
 	
 	        return "Category Updated";
@@ -378,30 +375,26 @@ public Object getAllCategoryProductsAndAllActiveProducts(Long categoryId) throws
     return new ArrayList<>(productDtos);
 }
 
-
 @Transactional
-public CategoryResponseDto updateCategoryProducts(Long categoryId, List<CategoryResponseDto.ProductResponseDto> productDtos) throws ApplicationException {
-    // Find the category by ID
+public String updateCategoryProducts(Long categoryId, List<CategoryResponseDto.ProductResponseDto> productDtos) throws ApplicationException {
     Optional<Category> categoryOptional = categoryRepository.findById(categoryId);
     
     if (categoryOptional.isPresent()) {
         Category category = categoryOptional.get();
-        Set<Product> categoryProducts = new HashSet<>(category.getProducts()); // Create a copy of the current products
+        Set<Product> categoryProducts = new HashSet<>(category.getProducts()); 
 
         for (CategoryResponseDto.ProductResponseDto productDto : productDtos) {
-            // Find the product by ID
             Optional<Product> productOptional = productRepository.findById(productDto.getProductId());
+            
             if (productOptional.isPresent()) {
                 Product product = productOptional.get();
 
-                // If productCategory is true, add the product to the category
                 if (productDto.isProductCategory()) {
-                    System.out.println("Adding product: " + product.getProductId());
-                    categoryProducts.add(product); // Add product to category
+                    categoryProducts.add(product); 
+                    product.getCategories().add(category); 
                 } else {
-                    // If productCategory is false, remove the product from the category
-                    System.out.println("Removing product: " + product.getProductId());
-                    categoryProducts.remove(product); // Remove product from category
+                    categoryProducts.remove(product); 
+                    product.getCategories().remove(category); 
                 }
             } else {
                 throw new ApplicationException(HttpStatus.NOT_FOUND, 1002, LocalDateTime.now(),
@@ -409,44 +402,15 @@ public CategoryResponseDto updateCategoryProducts(Long categoryId, List<Category
             }
         }
 
-        // Save the updated category with new product relationships
         category.setProducts(categoryProducts);
-        categoryRepository.save(category); // Save category to update relationships
-
-        // Convert the updated category to CategoryResponseDto
-        CategoryResponseDto responseDto = new CategoryResponseDto();
-        responseDto.setCategoryId(category.getCategoryId());
-        responseDto.setCategoryName(category.getCategoryName());
-        responseDto.setCategoryImage(category.getCategoryImage());
-
-        // Convert and set the updated products to response DTO
-        Set<CategoryResponseDto.ProductResponseDto> productResponseDtos = categoryProducts.stream().map(product -> {
-            CategoryResponseDto.ProductResponseDto productResponseDto = new CategoryResponseDto.ProductResponseDto();
-            productResponseDto.setProductId(product.getProductId());
-            productResponseDto.setProductName(product.getProductName());
-            productResponseDto.setProductDescription(product.getProductDescription());
-            productResponseDto.setProductPrice(product.getProductPrice());
-            productResponseDto.setProductGST(product.getProductGST());
-            productResponseDto.setProductActive(product.isProductActive());
-            productResponseDto.setLocation(product.getLocation());
-            productResponseDto.setProductImage(product.getProductImage());
-            productResponseDto.setUpdatedDate(product.getUpdatedDate());
-            productResponseDto.setProductUpdatedBy(product.getProductUpdatedBy());
-            productResponseDto.setProductCategory(true); // Products in the category are marked as true
-
-            return productResponseDto;
-        }).collect(Collectors.toSet());
-
-        responseDto.setProducts(productResponseDtos);
-
-        // Return the updated category DTO
-        return responseDto;
-
+        categoryRepository.save(category); 
+        return "Category updated successfully.";
     } else {
         throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(),
                 "Category not found for ID: " + categoryId);
     }
 }
+
 
 
 

@@ -114,7 +114,7 @@ public class CategoryController {
 		public ResponseEntity<Object> updateCategoryProducts(@RequestParam(required = false) Long categoryId, 
 		                                                     @RequestBody List<CategoryResponseDto.ProductResponseDto> productDtos) throws Exception {
 		    try {
-		        Object response = categoryService.updateCategoryProducts(categoryId, productDtos); // Returns a response from the service
+		        Object response = categoryService.updateCategoryProducts(categoryId, productDtos); 
 		        return new ResponseEntity<>(response, HttpStatus.OK);
 		    } catch (ApplicationException e) {
 		        return new ResponseEntity<>(e.getMessage(), e.getHttpStatus());
