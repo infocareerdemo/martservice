@@ -339,7 +339,7 @@ public class CompanyAdminService {
 		        newUser.setEmployeeCode(userDto.getEmployeeCode());
 		        newUser.setRole(userDto.getRole());
 		        newUser.setLocation(userDto.getLocation());
-		        newUser.setUserActive(userDto.isUserActive());
+		        newUser.setUserActive(true);
 
 		        // Save the new user in UserDetails repository
 		        userDetailRepository.save(newUser);
