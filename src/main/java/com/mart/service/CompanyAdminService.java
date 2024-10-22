@@ -152,6 +152,10 @@ public class CompanyAdminService {
 		            userDetail.setEmailId(userDetailDto.getEmailId());
 		            userDetail.setRole(userDetailDto.getRole());
 		            userDetail.setUserActive(true);
+		            
+		    		Optional<Location> location = locationRepository.findById(1L);
+		    		userDetail.setLocation(location.get());
+
 
 		            UserDetail savedUserDetail = userDetailRepository.save(userDetail);
 
@@ -164,6 +168,8 @@ public class CompanyAdminService {
 		            userDetailsDto.setAddress(savedUserDetail.getAddress());
 		            userDetailsDto.setEmployeeCode(savedUserDetail.getEmployeeCode());
 		            userDetailsDto.setUserActive(savedUserDetail.isUserActive());
+		            userDetailsDto.setLocation(savedUserDetail.getLocation());
+		            
 
 		        } catch (DataIntegrityViolationException ex) {
 	
@@ -338,8 +344,11 @@ public class CompanyAdminService {
 		        newUser.setAddress(userDto.getAddress());
 		        newUser.setEmployeeCode(userDto.getEmployeeCode());
 		        newUser.setRole(userDto.getRole());
-		        newUser.setLocation(userDto.getLocation());
 		        newUser.setUserActive(true);
+		        
+		        Optional<Location> location = locationRepository.findById(1L);
+		        newUser.setLocation(location.get());
+
 
 		        // Save the new user in UserDetails repository
 		        userDetailRepository.save(newUser);
