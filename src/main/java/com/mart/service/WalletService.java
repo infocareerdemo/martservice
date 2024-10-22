@@ -113,6 +113,69 @@ public class WalletService {
 	    if (walletRequest != null) {
 	        Optional<UserDetail> user = userDetailRepository.findById(walletRequest.getUserId());
 	        if (user.isPresent()) {
+	           // Wallet wallet = walletRepository.findByUserDetailUserId(walletRequest.getUserId());
+
+	                
+	                double existingAmount = user.get().getWalletAmount();
+	                double requestAmount = walletRequest.getWalletAmount();
+	                
+	                if (existingAmount >= requestAmount) {
+	                	user.get().setWalletAmount(existingAmount - requestAmount);
+	                	userDetailRepository.save(user.get());
+	                	
+	                    
+	                    Optional<Orders> order = orderRepository.findById(walletRequest.getOrderId());
+	                    if (order.isPresent()) {
+	                        order.get().setPaymentStatus(GeneralConstant.PAY_SUCCESS.toString());
+	                        order.get().setWalletAmount(requestAmount);
+	                        order.get().setCashAmount(walletRequest.getCashAmount());
+	                        String orderId = generateOrderId(order.get().getOrderedDateTime());
+	                        order.get().setOrderId(orderId);
+	                        orderRepository.save(order.get());
+	                        
+	                        
+	                    } else {
+	                        throw new ApplicationException(HttpStatus.NOT_FOUND, 1003, LocalDateTime.now(), "Order not found");
+	                    }
+	                    
+	                    
+	                    if (walletRequest.getProductIds() != null && !walletRequest.getProductIds().isEmpty()) {
+	                        List<Long> productIds = walletRequest.getProductIds();
+	                        
+	                        List<Cart> carts = cartRepository.findByUserDetailUserIdAndProductProductIdIn(walletRequest.getUserId(), productIds);
+	                        
+	                        if (!carts.isEmpty()) {
+	                            for (Cart cart : carts) {
+	                                cart.setProductActive(false);
+	                            }
+	                            cartRepository.saveAll(carts);
+	                        }
+	                    }
+	                    
+	                    WalletResponse walletResponse = new WalletResponse();
+	                    walletResponse.setSuccess(true);
+	                    return walletResponse;
+	                } else {
+	                    throw new ApplicationException(HttpStatus.BAD_REQUEST, 1004, LocalDateTime.now(), "Insufficient wallet balance");
+	                }
+	            } else {
+	                throw new ApplicationException(HttpStatus.BAD_REQUEST, 1000, LocalDateTime.now(), "Wallet not found for this user");
+	            }
+	                
+	        
+	        } else {
+	            throw new ApplicationException(HttpStatus.NOT_FOUND, 1002, LocalDateTime.now(), "User not found");
+	        }
+	   
+	    
+	    
+	}
+	
+	
+	/*public WalletResponse payByWallet(WalletRequest walletRequest) throws ApplicationException {
+	    if (walletRequest != null) {
+	        Optional<UserDetail> user = userDetailRepository.findById(walletRequest.getUserId());
+	        if (user.isPresent()) {
 	            Wallet wallet = walletRepository.findByUserDetailUserId(walletRequest.getUserId());
 	            
 	            
@@ -173,7 +236,7 @@ public class WalletService {
 	    }
 	    
 	    
-	}
+	}*/
 
 	//new paywallet method
 	public WalletResponse payByWallett(WalletRequest walletRequest) throws ApplicationException {
