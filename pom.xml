@@ -158,6 +158,9 @@
 	</dependencies>
 
 	<build>
+	
+	<finalName> kcs </finalName>
+	
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

@@ -23,6 +23,8 @@ public class LoginDto {
 	
 	private String password;
 	
+	private double walletAmount;
+	
 	private Role role;
 	
 	private String employeeCode;

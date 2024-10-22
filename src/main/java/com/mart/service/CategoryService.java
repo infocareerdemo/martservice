@@ -392,6 +392,7 @@ public String updateCategoryProducts(Long categoryId, List<CategoryResponseDto.P
                 if (productDto.isProductCategory()) {
                     categoryProducts.add(product); 
                     product.getCategories().add(category); 
+                    
                 } else {
                     categoryProducts.remove(product); 
                     product.getCategories().remove(category); 

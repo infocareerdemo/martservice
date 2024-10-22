@@ -102,6 +102,7 @@ public class UserController {
 	    loginDto.setRole(userDetail.getRole());
 	    loginDto.setPassword("");
 	    loginDto.setLocation(userDetail.getLocation());
+	    loginDto.setWalletAmount(userDetail.getWalletAmount());
 	    
         
 	    return new ResponseEntity<>(loginDto, headers,HttpStatus.OK);

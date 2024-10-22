@@ -99,6 +99,8 @@ public class CategoryController {
 	    }
 		
 		
+		
+		//get all  catgoeies with products
 		@GetMapping("/getAllCategoriesWithProducts")
 		public ResponseEntity<List<CategoryResponseDto>> getAllCategoriesWithProducts() {
 		      List<CategoryResponseDto> categories = categoryService.getAllCategoriesWithProducts();
@@ -110,6 +112,7 @@ public class CategoryController {
 	        return new ResponseEntity<>(categoryService.getAllCategoryProductsAndAllActiveProducts(categoryId),HttpStatus.OK);
 	    }
 
+		
 		@PostMapping("/updateCategoryProducts")
 		public ResponseEntity<Object> updateCategoryProducts(@RequestParam(required = false) Long categoryId, 
 		                                                     @RequestBody List<CategoryResponseDto.ProductResponseDto> productDtos) throws Exception {
@@ -123,8 +126,7 @@ public class CategoryController {
 
 
 
-		
-
+	
 		
 		
 

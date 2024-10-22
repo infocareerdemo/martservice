@@ -24,6 +24,9 @@ public class UserList {
 	    @Column(name = "userlist_id")
 	    private Long userListId;
 	 
+	    @Column(name = "user_id")
+	    private Long userId;
+	 
 	    @Column(name = "employee_code")
 	    private String employeeCode;
 
@@ -38,16 +41,13 @@ public class UserList {
 
 	    @Column(name = "wallet_amount")
 	    private double walletAmount; 
-	
-	    @Column(name = "\"current_date\"")  // Escaping current_date to avoid PostgreSQL conflict
-		private LocalDate currentDate;
 
-	    @Column(name = "future_date")
-	    private LocalDate futureDate;
+	    @Column(name = "future_date_time")
+	    private LocalDateTime futureDateTime;
 	    
 
-		@Column(name = "updated_date_time")
-		private LocalDateTime updatedDateTime;
+		@Column(name = "updated_current_date_time")
+		private LocalDateTime updatedCurrentDateTime;
 
 	
 }

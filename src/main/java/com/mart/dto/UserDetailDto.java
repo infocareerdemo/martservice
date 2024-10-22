@@ -1,6 +1,10 @@
 package com.mart.dto;
 
 
+import java.util.List;
+
+import org.springframework.security.core.userdetails.UserDetails;
+
 import com.mart.entity.Location;
 import com.mart.entity.Role;
 
@@ -25,10 +29,14 @@ public class UserDetailDto {
 	    private String employeeCode;
 	    
 	    private String name;
+	    
+	    private double walletAmount;
 	
 		private Location location;
 
 		private boolean userActive;
 	    
+	  //  private boolean userDuplicate;
+
 
 }

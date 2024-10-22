@@ -29,13 +29,11 @@ public class CompanyAdminController {
 	@Autowired
 	CompanyAdminService  companyAdminService;
 	
-	
-	@PostMapping("/saveUserList")
-	public ResponseEntity<Object> saveUserList(@RequestBody List<UserList> userList, @RequestParam  LocalDate futureDate) throws Exception{		
-		return new ResponseEntity<Object>(companyAdminService.saveUserList(userList,futureDate), HttpStatus.OK);
+	@PostMapping("/addWallet")
+	public ResponseEntity<Object> addWallet(@RequestBody List<UserList> userList, @RequestParam  LocalDateTime futureDate) throws Exception{		
+		return new ResponseEntity<Object>(companyAdminService.addWallet(userList,futureDate), HttpStatus.OK);
 		
 	}
-	
 	
 	@GetMapping("/getAllUserList")
 	public ResponseEntity<Object> getAllUserList() throws Exception{		
@@ -84,11 +82,28 @@ public class CompanyAdminController {
 	}
 	
 
-	@PostMapping("/saveMultipleUser")
-	public ResponseEntity<Object> saveMultipleUser(@RequestBody List<UserDetailDto> userList) throws Exception{		
-		return new ResponseEntity<Object>(companyAdminService.saveMultipleUser(userList), HttpStatus.OK);
+	  @PostMapping("/saveMultipleUser")
+	    public ResponseEntity<Object> saveMultipleUser(@RequestBody List<UserDetailDto> userList) {
+	        List<UserDetailDto> duplicateUsers;
+
+	        try {
+	            duplicateUsers = companyAdminService.saveMultipleUser(userList);
+
+	            if (!duplicateUsers.isEmpty()) {
+	                return new ResponseEntity<>(duplicateUsers, HttpStatus.CONFLICT);
+	            }
+
+	            return new ResponseEntity<>("All users saved successfully", HttpStatus.OK);
+	        } catch (Exception e) {
+	            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+	        }
+	    }
+	
+	
+	@GetMapping("/getWalletDetails")
+	public ResponseEntity<Object> getWalletDetails(@RequestParam Long userId) throws Exception{		
+		return new ResponseEntity<Object>(companyAdminService.getWalletDetails(userId), HttpStatus.OK);
 		
 	}
-	
 
 }

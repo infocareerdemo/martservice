@@ -11,9 +11,9 @@ D:\Projects\Mart\martservice\src\main\java\com\mart\controller\OrderController.j
 D:\Projects\Mart\martservice\src\main\java\com\mart\controller\PaymentController.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\controller\ProductController.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\controller\UserController.java
-D:\Projects\Mart\martservice\src\main\java\com\mart\controller\UserListController.java
-D:\Projects\Mart\martservice\src\main\java\com\mart\controller\UserListExcelParser.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\controller\WalletController.java
+D:\Projects\Mart\martservice\src\main\java\com\mart\dto\CategoryRequestDto.java
+D:\Projects\Mart\martservice\src\main\java\com\mart\dto\CategoryResponseDto.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\dto\ItemCount.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\dto\LoginDto.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\dto\OrderDashboard.java
@@ -24,6 +24,8 @@ D:\Projects\Mart\martservice\src\main\java\com\mart\dto\OrderSummary.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\dto\OrderWithPaymentRequest.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\dto\PaymentRequest.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\dto\PaymentResponse.java
+D:\Projects\Mart\martservice\src\main\java\com\mart\dto\ProductRequestDto.java
+D:\Projects\Mart\martservice\src\main\java\com\mart\dto\ProductResponseDto.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\dto\UserDetailDto.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\dto\WalletRequest.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\dto\WalletResponse.java
@@ -34,7 +36,6 @@ D:\Projects\Mart\martservice\src\main\java\com\mart\entity\Location.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\entity\OrderDetails.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\entity\Orders.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\entity\Product.java
-D:\Projects\Mart\martservice\src\main\java\com\mart\entity\ProductCategory.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\entity\RazorPayDetails.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\entity\RazorpayPayment.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\entity\Role.java
@@ -52,7 +53,6 @@ D:\Projects\Mart\martservice\src\main\java\com\mart\repository\CompanyAdminRepos
 D:\Projects\Mart\martservice\src\main\java\com\mart\repository\LocationRepository.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\repository\OrderDetailsRepository.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\repository\OrderRepository.java
-D:\Projects\Mart\martservice\src\main\java\com\mart\repository\ProductCategoryRepository.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\repository\ProductRepository.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\repository\RazorPayDetailsRepository.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\repository\RazorpayPaymentRepository.java
@@ -68,7 +68,6 @@ D:\Projects\Mart\martservice\src\main\java\com\mart\service\OrderService.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\service\PaymentService.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\service\ProductService.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\service\UserDetailService.java
-D:\Projects\Mart\martservice\src\main\java\com\mart\service\UserListService.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\service\WalletService.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\util\CryptoUtils.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\util\FunUtils.java
