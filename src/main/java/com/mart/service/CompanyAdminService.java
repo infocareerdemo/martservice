@@ -351,8 +351,10 @@ public class CompanyAdminService {
 		        newUser.setPhone(userDto.getPhoneNo());
 		        newUser.setAddress(userDto.getAddress());
 		        newUser.setEmployeeCode(userDto.getEmployeeCode());
-		        newUser.setRole(userDto.getRole());
 		        newUser.setUserActive(true);
+		        
+		        Optional<Role> role = roleRepository.findById(2L);
+		        newUser.setRole(role.get());
 		        
 		        Optional<Location> location = locationRepository.findById(1L);
 		        newUser.setLocation(location.get());
