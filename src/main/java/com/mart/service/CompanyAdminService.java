@@ -268,7 +268,7 @@ public class CompanyAdminService {
 
 		            UserDetail userDetail = new UserDetail();
 		            userDetail.setEmployeeCode(user.getEmployeeCode());
-		            userDetail.setUserName(user.getName());
+		            userDetail.setUserName(user.getUserName());
 		            userDetail.setPhone(user.getPhoneNo());
 		            userDetail.setEmailId(user.getEmailId());
 		            userDetail.setUserActive(true);
