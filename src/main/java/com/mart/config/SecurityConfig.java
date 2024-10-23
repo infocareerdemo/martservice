@@ -19,33 +19,42 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
 
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        System.out.println("Security Config");
+
+        http.csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(req -> req
+                .requestMatchers(
+                    "/api/v1/user/verifyUserName",
+                    "/api/v1/user/getotpToPhone",
+                    "/api/v1/user/login",
+                    "/api/v1/user/adminLogin",                   
+                    "/api/v1/user/verifyEmployeeCodeAndGenerateOtp" ,
+                    "/api/v1/userlist/upload",
+                    "/api/v1/userlist/moveUsers",
+                    "/api/v1/product/getAllproductsByCategoryId",
+                    "/api/v1/product/getAllCategoriesByProductId"
+   
+                )
+                .permitAll()
+                .anyRequest().authenticated())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) 
+            .headers(headers -> headers
+                .addHeaderWriter((request, response) -> {
+                    response.setHeader("Access-Control-Expose-Headers", "Authorization, Content-Type, Custom-Header");
+                }))
+            .addFilterBefore(new JwtAuthentication(), BasicAuthenticationFilter.class);
+
+        return http.build();
+    }
     
-	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.csrf(httpCsrf -> httpCsrf.disable())
-				.authorizeHttpRequests(req -> req
-						.requestMatchers(
-			                    "/api/v1/user/verifyUserName",
-			                    "/api/v1/user/getotpToPhone",
-			                    "/api/v1/user/login",
-			                    "/api/v1/user/adminLogin",                   
-			                    "/api/v1/user/verifyEmployeeCodeAndGenerateOtp" ,
-			                    "/api/v1/userlist/upload",
-			                    "/api/v1/userlist/moveUsers",
-			                    "/api/v1/product/getAllproductsByCategoryId",
-			                    "/api/v1/product/getAllCategoriesByProductId"
-			                     
-			                )
-						.permitAll().anyRequest().authenticated())
-				.addFilterBefore(new JwtAuthentication(), BasicAuthenticationFilter.class);
-		return http.build();
-	}
     
 
-    /*@Bean
+    @Bean
      public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-     configuration.setAllowedOrigins(List.of("http://localhost:3000","https://kcsmart.infocareerindia.com")); 
+     configuration.setAllowedOrigins(List.of("http://localhost:3000")); 
       configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept")); 
         configuration.setExposedHeaders(List.of("Authorization", "Content-Type")); 
@@ -53,7 +62,8 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-   }*/
+   }
+    
     
 
 

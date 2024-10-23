@@ -124,10 +124,10 @@ public class CategoryService {
 	        	
 	        	 Category existinCategory = categoryRepository.findByCategoryName(categoryRequestDto.getCategoryName());
 	     		
-	             if (existinCategory !=null) {
-	                 throw new ApplicationException(HttpStatus.CONFLICT, 1001, LocalDateTime.now(), 
-	                         "Category name already exists with the same name");
-	             }
+//	             if (existinCategory !=null) {
+//	                 throw new ApplicationException(HttpStatus.CONFLICT, 1001, LocalDateTime.now(), 
+//	                         "Category name already exists with the same name");
+//	             }
 	             
 	        	existingCategory.get().setCategoryName(categoryRequestDto.getCategoryName());
 
