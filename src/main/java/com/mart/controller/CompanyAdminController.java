@@ -1,12 +1,17 @@
 package com.mart.controller;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -105,5 +110,38 @@ public class CompanyAdminController {
 		return new ResponseEntity<Object>(companyAdminService.getWalletDetails(userId), HttpStatus.OK);
 		
 	}
+	
+	
+	@PostMapping("/downloadMultipleUserExcel")
+    public ResponseEntity<InputStreamResource> downloadMultipleUserExcel() throws IOException {
+        ByteArrayInputStream excelFile = companyAdminService.generateEmptyExcelWithHeaders();
+
+	    String filename = "multiuser_upload_template.xlsx";
+	    
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=" + filename);
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(new InputStreamResource(excelFile));
+    }
+    
+    
+	@PostMapping("/downloadWalletUploadExcel")
+	public ResponseEntity<InputStreamResource> downloadWalletUploadExcel() throws IOException {
+	    ByteArrayInputStream excelFile = companyAdminService.generateEmptyExcelForWalletWithHeaders();
+
+	    String filename = "wallet_upload_template.xlsx";
+
+	    HttpHeaders headers = new HttpHeaders();
+	    headers.add("Content-Disposition", "attachment; filename=" + filename);
+
+	    return ResponseEntity.ok()
+	            .headers(headers)
+	            .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+	            .body(new InputStreamResource(excelFile));
+	}
+
 
 }

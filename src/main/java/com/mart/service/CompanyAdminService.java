@@ -1,5 +1,8 @@
 package com.mart.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -8,6 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -426,7 +434,49 @@ public class CompanyAdminService {
 
 
 
-		
+			  public ByteArrayInputStream generateEmptyExcelWithHeaders() throws IOException {
+			        String[] columns = {"S.no", "employeeCode", "phone", "userName", "email"};
+
+			        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+			            Sheet sheet = workbook.createSheet("Employee Data");
+
+			            Row headerRow = sheet.createRow(0);
+			            for (int i = 0; i < columns.length; i++) {
+			                Cell cell = headerRow.createCell(i);
+			                cell.setCellValue(columns[i]);
+			            }
+
+			            for (int i = 0; i < columns.length; i++) {
+			                sheet.autoSizeColumn(i);
+			            }
+
+			            workbook.write(out);
+			            return new ByteArrayInputStream(out.toByteArray());
+			        }
+			    }
+			  
+			  
+
+			  public ByteArrayInputStream generateEmptyExcelForWalletWithHeaders() throws IOException {
+			        String[] columns = {"S.no", "employeeCode", "phone", "walletAmount"};
+
+			        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+			            Sheet sheet = workbook.createSheet("Wallet Data");
+
+			            Row headerRow = sheet.createRow(0);
+			            for (int i = 0; i < columns.length; i++) {
+			                Cell cell = headerRow.createCell(i);
+			                cell.setCellValue(columns[i]);
+			            }
+
+			            for (int i = 0; i < columns.length; i++) {
+			                sheet.autoSizeColumn(i);
+			            }
+
+			            workbook.write(out);
+			            return new ByteArrayInputStream(out.toByteArray());
+			        }
+			    }
 		
 
 }

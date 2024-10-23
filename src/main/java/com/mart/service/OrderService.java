@@ -24,6 +24,7 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -124,21 +125,22 @@ public class OrderService {
 	
 
 
-	public List<Orders> getOrdersByUserId(Long userId)throws Exception {
-		  Optional<UserDetail> user = userDetailRepository.findById(userId);
-           if(user.isPresent()) {
-
-        	List<Orders> orders =  orderRepository.findByUserDetailUserId(userId);
-        	 if(!CollectionUtils.isEmpty(orders)) {
-        		return orders;
-        	  }
-           }else {
-			  throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "Invalid user");
-           }
-		return null;
-        	          	   
+	public List<Orders> getOrdersByUserId(Long userId) throws Exception {
+	    Optional<UserDetail> user = userDetailRepository.findById(userId);
+	    
+	    if (user.isPresent()) {
+	        // Sort by orderDate in descending order
+	        List<Orders> orders = orderRepository.findByUserDetailUserId(userId, Sort.by(Sort.Direction.DESC, "orderedDateTime"));
+	        
+	        if (!CollectionUtils.isEmpty(orders)) {
+	            return orders;
+	        }
+	    } else {
+	        throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "Invalid user");
+	    }
+	    
+	    return null;
 	}
-
 
 	public OrderSummary getOrderAndOrderDetailsById(Long id) throws ApplicationException{
 		OrderSummary  orderSummary = new OrderSummary();
