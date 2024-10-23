@@ -154,7 +154,7 @@ public class UserDetailService {
 	  
 	
 
-	public UserDetail verifyLoginCredential(LoginDto loginDto, HttpServletResponse response) throws Exception{		
+	public UserDetail verifyLoginCredentiall(LoginDto loginDto, HttpServletResponse response) throws Exception{		
 	 UserDetail userDetail = userDetailRepository.findByEmployeeCode(loginDto.getEmployeeCode());
 	    if(userDetail !=null) {	    	
 	         if(userDetail.getPhoneOtp() == loginDto.getPhoneOTP()) {	        	 
@@ -168,6 +168,32 @@ public class UserDetailService {
 		return userDetail;
 	}
 
+	public UserDetail verifyLoginCredential(LoginDto loginDto, HttpServletResponse response) throws Exception{		
+		 UserDetail userDetail = userDetailRepository.findByEmployeeCode(loginDto.getEmployeeCode());
+		    if(userDetail !=null) {
+		    	
+		    	  if(userDetail.isUserActive() == true) {
+		    		  
+		    		  if(userDetail.getPhoneOtp() == loginDto.getPhoneOTP()) {	        	 
+		 	         }else {
+		 		            throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "Invalid Credentials");
+		 	         }	
+		    		  
+		    	  }else {
+	 		            throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "User is Deactivated");
+
+		    	  }
+		    	
+		    }else{
+		        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "User Not Found");
+
+		    }
+		 
+		 
+			return userDetail;
+		}
+	
+	
 
 	public UserDetailDto getUserDetailsById(Long userId, HttpServletResponse response)throws ApplicationException {
 		 if(userId !=null) {
