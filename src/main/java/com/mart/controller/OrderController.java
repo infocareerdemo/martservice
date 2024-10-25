@@ -120,5 +120,36 @@ public class OrderController {
 		return new ResponseEntity<Object>(orderService.updateDeliveredStatus(orderStatusDto), HttpStatus.OK);
 		
 	}
+	
+	
+	@PostMapping("/getDateWiseUserOrderDetailsExcel")
+	public ResponseEntity<Object> getDateWiseUserOrderDetailsExcel(
+	        @RequestParam(required = false) LocalDate fromDate,
+	        @RequestParam(required = false) LocalDate toDate) throws IOException {
+
+	    byte[] in;
+
+	    if (fromDate != null && toDate == null) {
+	        in = orderService.getDateWiseUserOrderDetailsExcel(fromDate);
+	    } 
+	    else if (fromDate != null && toDate != null) {
+	        in = orderService.getDateWiseUserOrderDetailsExcel(fromDate, toDate);
+	    } 
+	    else {
+	        return new ResponseEntity<>("Please provide either a valid fromDate or both fromDate and toDate", HttpStatus.BAD_REQUEST);
+	    }
+
+	    HttpHeaders headers = new HttpHeaders();
+	    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+	    String filename = "UserWiseOrderReport.xlsx";
+	    headers.setContentDispositionFormData(filename, filename);
+	    headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+	    return new ResponseEntity<>(in, headers, HttpStatus.OK);
+	}
+
+
+
+
 }
 	

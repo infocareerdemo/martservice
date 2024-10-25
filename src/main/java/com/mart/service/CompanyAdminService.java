@@ -19,6 +19,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
@@ -66,6 +67,7 @@ public class CompanyAdminService {
 		
 		public List<UserDetail>  getAllUserList() throws ApplicationException{			
 			List<UserDetail>  userList = 	userDetailRepository.findAll();
+			
 			  return userList;
 		}
 		
@@ -206,6 +208,7 @@ public class CompanyAdminService {
 				if(userDetails !=null) {
 					UserDetail userDetail =	userDetails.get();
 					
+					  userDetailsDto.setUserId(userDetails.get().getUserId());
 					  userDetailsDto.setUserName(userDetail.getName());
 					  userDetailsDto.setPhoneNo(userDetail.getPhone());
 					  userDetailsDto.setUserName(userDetail.getUserName());
@@ -214,6 +217,7 @@ public class CompanyAdminService {
 					  userDetailsDto.setAddress(userDetail.getAddress());
 					  userDetailsDto.setEmployeeCode(userDetail.getEmployeeCode());
 					  userDetailsDto.setUserActive(userDetail.isUserActive());
+					  userDetailsDto.setWalletAmount(userDetail.getWalletAmount());
 					
 				}else {
 			           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "user Not Found");
@@ -226,6 +230,8 @@ public class CompanyAdminService {
 			}
 			return userDetailsDto;
 		}
+		
+		
 
 		public UserDetailDto updateUser(UserDetailDto userDetailDto) throws ApplicationException{
 			 UserDetailDto userDetailsDto = new UserDetailDto();
@@ -236,6 +242,7 @@ public class CompanyAdminService {
                 	   userDetail.setName(userDetailDto.getName());
                 	   userDetail.setUserName(userDetailDto.getName());
                 	   userDetail.setEmailId(userDetailDto.getEmailId());
+                	   userDetail.setPhone(userDetailDto.getPhoneNo());
                 	   userDetailRepository.save(userDetail);
                 	   
 
@@ -260,6 +267,43 @@ public class CompanyAdminService {
 			
 			return userDetailsDto;
 		}
+		
+		
+		public UserDetailDto updateWalletToOneUser(UserDetailDto userDetailDto) throws ApplicationException{
+			 UserDetailDto userDetailsDto = new UserDetailDto();
+
+			if(userDetailDto.getUserId() != null) {
+				if(userDetailDto.getWalletAmount() > 0) {
+				Optional<UserDetail> userDetail  =	userDetailRepository.findById(userDetailDto.getUserId());
+					 if(userDetail != null) {
+						 userDetail.get().setWalletAmount(userDetailDto.getWalletAmount());
+						 userDetailRepository.save(userDetail.get());
+						 
+						  userDetailsDto.setUserName(userDetail.get().getUserName());
+	 					  userDetailsDto.setPhoneNo(userDetail.get().getPhone());
+	 					  userDetailsDto.setEmailId(userDetail.get().getEmailId());
+	 					  userDetailsDto.setRole(userDetail.get().getRole());
+	 					  userDetailsDto.setEmployeeCode(userDetail.get().getEmployeeCode());
+	 					  userDetailsDto.setUserActive(userDetail.get().isUserActive());
+						 
+					 }else {
+				           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "User Not Found");
+
+					 }
+				}else {
+			           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Wallet Amount not Found");
+
+				}
+			}else {
+		           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Id Not Found");
+
+			}
+		
+			return userDetailsDto;
+		}
+
+	
+		
 		
 	
 		public List<UserDetailDto> saveMultipleUserr(List<UserDetailDto> userDetailListDto) throws ApplicationException {
@@ -381,7 +425,7 @@ public class CompanyAdminService {
 		  
 		    
 
-			public List<UserList> addWallet(List<UserList> userList, LocalDateTime futureDate) throws ApplicationException {
+			/*public List<UserList> addWallet(List<UserList> userList, LocalDateTime futureDate) throws ApplicationException {
 			    if (userList != null && !userList.isEmpty()) {
 			        for (UserList user : userList) {
 			            Optional<UserDetail> existingUser = userDetailRepository
@@ -409,7 +453,39 @@ public class CompanyAdminService {
 			        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Users data Not Found");
 			    }
 			    return userList;
+			}*/
+		
+		
+		 public List<UserList> addWalletUpdated(List<UserList> userList) throws ApplicationException {
+			    if (userList != null && !userList.isEmpty()) {
+			        for (UserList user : userList) {
+			            Optional<UserDetail> existingUser = userDetailRepository
+			                    .findByEmployeeCodeAndPhone(user.getEmployeeCode(), user.getPhone());
+
+			            if (existingUser.isPresent()) {
+			                UserDetail userDetail = existingUser.get();
+			                
+			                UserList newUserList = new UserList();
+			                newUserList.setEmployeeCode(user.getEmployeeCode());
+			                newUserList.setPhone(user.getPhone());
+			                newUserList.setWalletAmount(user.getWalletAmount());  
+			                
+			                newUserList.setFutureDateTime(user.getFutureDateTime()); 
+			                newUserList.setUpdatedCurrentDateTime(LocalDateTime.now());
+
+			                userListRepository.save(newUserList);
+
+			            } else {
+			                throw new ApplicationException(HttpStatus.NOT_FOUND, 1002, LocalDateTime.now(), 
+			                                               "User with EmployeeCode: " + user.getEmployeeCode() + " not found");
+			            }
+			        }
+			        return userList;  
+			    } else {
+			        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Users data Not Found");
+			    }
 			}
+		 
 
 			
 			
@@ -480,5 +556,36 @@ public class CompanyAdminService {
 			        }
 			    }
 		
+			// Scheduler to update wallet amounts for users when futureDateTime is reached
+		   //  @Scheduled(cron = "0 * * * * ?") // Runs every minute to check if any user has reached their futureDateTime
+			  @Scheduled(cron = "0 0 1 * * ?") // Runs every day at 1:00 AM
+			  public void updateWalletAmountForFutureDates() {
+			      LocalDateTime now = LocalDateTime.now();
+			      
+			      // Find records where futureDateTime is less than or equal to current time
+			      List<UserList> userList = userListRepository.findByFutureDateTimeLessThanEqual(now);
 
+			      for (UserList user : userList) {
+			          // Fetch the corresponding UserDetail using employeeCode and phone
+			          Optional<UserDetail> existingUserOpt = userDetailRepository
+			                  .findByEmployeeCodeAndPhone(user.getEmployeeCode(), user.getPhone());
+
+			          if (existingUserOpt.isPresent()) {
+			              // Update the wallet amount
+			              UserDetail userDetail = existingUserOpt.get();
+			              userDetail.setWalletAmount(user.getWalletAmount());
+
+			              // Save the updated UserDetail back to the repository
+			              userDetailRepository.save(userDetail);
+
+			              // Optionally log or perform additional actions
+			              System.out.println("Updated wallet for user with EmployeeCode: " + user.getEmployeeCode());
+			          } else {
+			              System.err.println("User with EmployeeCode: " + user.getEmployeeCode() + " not found");
+			          }
+			      }
+			  }
+
+		
+			            
 }

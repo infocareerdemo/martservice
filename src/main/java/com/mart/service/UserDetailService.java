@@ -205,6 +205,7 @@ public class UserDetailService {
 				   userDetailDto.setEmailId(userDetail.get().getEmailId());
 				   userDetailDto.setRole(userDetail.get().getRole());
 				   userDetailDto.setAddress(userDetail.get().getAddress());
+				   userDetailDto.setEmployeeCode(userDetail.get().getEmployeeCode());
 				   return userDetailDto;				   
 			   }else {
 			        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "User Not Found");

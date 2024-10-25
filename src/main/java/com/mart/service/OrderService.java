@@ -15,9 +15,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
@@ -207,6 +212,7 @@ public class OrderService {
 	            double gst = (gstPercentage / 100.0) * totAmt;
 				orders.setGstAmount(Double.parseDouble(String.format("%.2f", gst)));
 				double totalAmountIncludingGst = totAmt + gst;
+				
 				orders.setTotalAmount(Double.parseDouble(String.format("%.2f", totalAmountIncludingGst)));
 				
 				orderRepository.save(orders);
@@ -677,8 +683,109 @@ public class OrderService {
 	}
 
 	
+    public byte[] getDateWiseUserOrderDetailsExcel(LocalDate date) throws IOException {
+        String paymentStatus = "PAY_SUCCESS"; 
+
+        LocalDateTime startDateTime = date.atStartOfDay();
+        LocalDateTime endDateTime = date.plusDays(1).atStartOfDay();
+
+        List<Orders> orders = orderRepository.findByOrderedDateTimeAndPaymentStatus(startDateTime, endDateTime, paymentStatus);
+        
+        return generateExcelReport(orders);
+    }
+
+    public byte[] getDateWiseUserOrderDetailsExcel(LocalDate fromDate, LocalDate toDate) throws IOException {
+        String paymentStatus = "PAY_SUCCESS"; 
+
+        LocalDateTime startDateTime = fromDate.atStartOfDay();
+        LocalDateTime endDateTime = toDate.plusDays(1).atStartOfDay();
+
+
+        List<Orders> orders = orderRepository.findByOrderedDateTimeAndPaymentStatus(startDateTime, endDateTime, paymentStatus);
+        
+        return generateExcelReport(orders);
+    }
+
+    public byte[] generateExcelReport(List<Orders> orders) throws IOException {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("User Order Report");
+
+        Row headerRow = sheet.createRow(0);
+        String[] headers = {"S.no", "Order Date", "Employee Code", "Order ID", "Total Amount", "Cash", "Wallet", "Razorpay", "Product Name", "Quantity", "Price"};
+
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(createHeaderCellStyle(workbook));
+        }
+
+        int rowNum = 1;
+        int serialNumber = 1;
+
+        for (Orders order : orders) {
+            List<OrderDetails> orderDetails = orderDetailsRepository.findByOrdersId(order.getId());
+
+            boolean isFirstProduct = true;
+
+            for (OrderDetails orderDetail : orderDetails) {
+                Row row = sheet.createRow(rowNum++);
+
+                if (isFirstProduct) {
+                    row.createCell(0).setCellValue(serialNumber++);
+
+                    Cell dateCell = row.createCell(1);
+                    dateCell.setCellValue(order.getOrderedDateTime());
+                    dateCell.setCellStyle(createDateCellStyle(workbook)); 
+
+                    row.createCell(2).setCellValue(order.getUserDetail().getEmployeeCode());
+                    row.createCell(3).setCellValue(order.getOrderId());
+                    row.createCell(4).setCellValue(order.getTotalAmount());
+                    row.createCell(5).setCellValue(order.getCashAmount());
+                    row.createCell(6).setCellValue(order.getWalletAmount());
+                    row.createCell(7).setCellValue(order.getRazorpayAmount());
+
+                    isFirstProduct = false; 
+                }
+
+                row.createCell(8).setCellValue(orderDetail.getProducts().getProductName()); 
+                row.createCell(9).setCellValue(orderDetail.getQuantity());                  
+                row.createCell(10).setCellValue(orderDetail.getUnitPrice());                
+            }
+        }
+
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        return outputStream.toByteArray();
+    }
+
+
+    private CellStyle createHeaderCellStyle(Workbook workbook) {
+        CellStyle headerStyle = workbook.createCellStyle();
+        Font font = workbook.createFont();
+        font.setBold(true);
+        headerStyle.setFont(font);
+        return headerStyle;
+    }
+
+    private CellStyle createDateCellStyle(Workbook workbook) {
+        CellStyle dateStyle = workbook.createCellStyle();
+        CreationHelper creationHelper = workbook.getCreationHelper();
+        dateStyle.setDataFormat(creationHelper.createDataFormat().getFormat("yyyy-mm-dd")); 
+        return dateStyle;
+    }
+
 
 }
+	
+	
+
+
 	
 	/*public Object saveOrderWithOrderDetails(List<OrderRequest> orderRequests, Long userId, Long locationId, PaymentRequest paymentRequest) throws ApplicationException {
 	    

@@ -34,11 +34,18 @@ public class CompanyAdminController {
 	@Autowired
 	CompanyAdminService  companyAdminService;
 	
-	@PostMapping("/addWallet")
+	/*@PostMapping("/addWallet")
 	public ResponseEntity<Object> addWallet(@RequestBody List<UserList> userList, @RequestParam  LocalDateTime futureDate) throws Exception{		
 		return new ResponseEntity<Object>(companyAdminService.addWallet(userList,futureDate), HttpStatus.OK);
 		
+	}*/
+	
+	@PostMapping("/addWallet")
+	public ResponseEntity<Object> addWalletUpdated(@RequestBody List<UserList> userList) throws Exception{		
+		return new ResponseEntity<Object>(companyAdminService.addWalletUpdated(userList), HttpStatus.OK);
+		
 	}
+	
 	
 	@GetMapping("/getAllUserList")
 	public ResponseEntity<Object> getAllUserList() throws Exception{		
@@ -77,6 +84,12 @@ public class CompanyAdminController {
 	@PostMapping("/updateUser")
 	public ResponseEntity<Object> updateUser(@RequestBody UserDetailDto userDetailDto) throws Exception{		
 		return new ResponseEntity<Object>(companyAdminService.updateUser(userDetailDto), HttpStatus.OK);
+		
+	}
+	
+	@PostMapping("/updateWalletToOneUser")
+	public ResponseEntity<Object> updateWalletToOneUser(@RequestBody UserDetailDto userDetailDto) throws Exception{		
+		return new ResponseEntity<Object>(companyAdminService.updateWalletToOneUser(userDetailDto), HttpStatus.OK);
 		
 	}
 	

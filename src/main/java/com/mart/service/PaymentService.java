@@ -214,6 +214,9 @@ public class PaymentService {
 				// update payment status and generate order Id
 				Orders order = orderService.updatePaymentStatus(orders.get(), true);
 
+			
+				
+				
 				razorPayDetails.setOrders(order);
 
 				razorPayDetailsRepository.save(razorPayDetails);
@@ -276,10 +279,10 @@ public class PaymentService {
 
 	
 	//new paywallet and cash method
-	public PaymentResponse payByWallet(WalletRequest walletRequest) throws ApplicationException {
+	/*public PaymentResponse payByWallet(WalletRequest walletRequest) throws ApplicationException {
 	    PaymentResponse paymentResponse = new PaymentResponse();
-	    double reqWalletAmount = walletRequest.getCashAmount();
-	    double reqCashAmount = walletRequest.getWalletAmount();
+	    double reqWalletAmount = walletRequest.getWalletAmount();
+	    double reqCashAmount = walletRequest.getCashAmount();
 
 	    
 	        Optional<UserDetail> userDetail = userDetailRepository.findById(walletRequest.getUserId());
@@ -357,13 +360,16 @@ public class PaymentService {
 	            } else{
 	                throw new ApplicationException(HttpStatus.BAD_REQUEST, 1004, LocalDateTime.now(), "Insufficient wallet balance");
 	            }
-	        }else if(reqWalletAmount > 0 &&  walletRequest.getRazorPaymentStatus() == "SUCCESS") {
+	        }else if(reqWalletAmount > 0 &&  walletRequest.getRazorPaymentStatus() == "PAY_SUCCESS") {
 	        	   if (existingWalletAmount >= reqWalletAmount) {
 		                userDetail.get().setWalletAmount(existingWalletAmount - reqWalletAmount);
 		                userDetailRepository.save(userDetail.get());
 		                
 		                Orders order = orders.get();
 		                order.setWalletAmount(reqWalletAmount);
+		                orderRepository.save(order);
+		                
+		                
 
 		                paymentResponse.setRazorpayAmount(order.getRazorpayAmount());
 		                paymentResponse.setWalletAmount(reqWalletAmount);
@@ -385,7 +391,122 @@ public class PaymentService {
 	    
 
 	    return paymentResponse;
+	}*/
+	
+	
+	
+	public PaymentResponse payByWallet(WalletRequest walletRequest) throws ApplicationException {
+	    PaymentResponse paymentResponse = new PaymentResponse();
+	    double reqWalletAmount = walletRequest.getWalletAmount();
+	    double reqCashAmount = walletRequest.getCashAmount();
+        double reqRazorpayAmount = walletRequest.getRazorpayAmount();
+        
+        
+	    
+	    Optional<UserDetail> userDetail = userDetailRepository.findById(walletRequest.getUserId());
+	    if (userDetail.isEmpty()) {
+	        throw new ApplicationException(HttpStatus.NOT_FOUND, 1002, LocalDateTime.now(), "User not found");
+	    }
+
+	    Optional<Orders> orders = orderRepository.findById(walletRequest.getOrderId());
+	    if (orders.isEmpty()) {
+	        throw new ApplicationException(HttpStatus.NOT_FOUND, 1002, LocalDateTime.now(), "Order not found");
+	    }
+
+	    List<OrderDetails> orderDetails = orderDetailsRepository.findByOrdersId(walletRequest.getOrderId());
+	    if (orderDetails.isEmpty()) {
+	        throw new ApplicationException(HttpStatus.NOT_FOUND, 1002, LocalDateTime.now(), "Order Details not found");
+	    }
+
+	    double existingWalletAmount = userDetail.get().getWalletAmount();
+	    Orders order = orders.get();
+
+	    // 1. Wallet and Cash payment
+	    if (reqWalletAmount > 0 && reqCashAmount > 0) {
+	        if (existingWalletAmount >= reqWalletAmount) {
+	            userDetail.get().setWalletAmount(existingWalletAmount - reqWalletAmount);
+	            userDetailRepository.save(userDetail.get());
+
+	            order.setWalletAmount(reqWalletAmount);
+	            order.setCashAmount(reqCashAmount);
+	            order.setPaymentStatus(GeneralConstant.PAY_SUCCESS.toString());
+	            String orderId = generateOrderId(order.getOrderedDateTime());
+	            order.setOrderId(orderId);
+	            orderRepository.save(order);
+
+	            paymentResponse.setCashAmount(reqCashAmount);
+	            paymentResponse.setWalletAmount(reqWalletAmount);
+	            paymentResponse.setOrderDetails(orderDetails);
+	            paymentResponse.setOrders(order);
+	            paymentResponse.setSuccessMsg("Wallet and Cash Paid!!");
+	        } else {
+	            throw new ApplicationException(HttpStatus.BAD_REQUEST, 1004, LocalDateTime.now(), "Insufficient wallet balance");
+	        }
+	    }
+	    // 2. Wallet-only payment
+	    else if (reqWalletAmount > 0) {
+	        if (existingWalletAmount >= reqWalletAmount) {
+	            userDetail.get().setWalletAmount(existingWalletAmount - reqWalletAmount);
+	            userDetailRepository.save(userDetail.get());
+
+	            order.setWalletAmount(reqWalletAmount);
+	            order.setPaymentStatus(GeneralConstant.PAY_SUCCESS.toString());
+	            String orderId = generateOrderId(order.getOrderedDateTime());
+	            order.setOrderId(orderId);
+	            orderRepository.save(order);
+
+	            paymentResponse.setWalletAmount(reqWalletAmount);
+	            paymentResponse.setOrderDetails(orderDetails);
+	            paymentResponse.setOrders(order);
+	            paymentResponse.setSuccessMsg("Wallet-only Paid!!");
+	        } else {
+	            throw new ApplicationException(HttpStatus.BAD_REQUEST, 1004, LocalDateTime.now(), "Insufficient wallet balance");
+	        }
+	    }
+	    // 3. Cash-only payment
+	    else if (reqCashAmount > 0) {
+	        order.setCashAmount(reqCashAmount);
+	        order.setPaymentStatus(GeneralConstant.PAY_SUCCESS.toString());
+	        String orderId = generateOrderId(order.getOrderedDateTime());
+	        order.setOrderId(orderId);
+	        orderRepository.save(order);
+
+	        paymentResponse.setCashAmount(reqCashAmount);
+	        paymentResponse.setOrderDetails(orderDetails);
+	        paymentResponse.setOrders(order);
+	        paymentResponse.setSuccessMsg("Cash-only Paid!!");
+	    }
+	    
+	    
+
+	    // 4. Razorpay and Wallet payment
+	    else if (reqWalletAmount > 0 && "PAY_SUCCESS".equals(walletRequest.getRazorPaymentStatus())) {
+	        if (existingWalletAmount >= reqWalletAmount) {
+	            userDetail.get().setWalletAmount(existingWalletAmount - reqWalletAmount);
+	            userDetailRepository.save(userDetail.get());
+
+	            order.setWalletAmount(reqWalletAmount);
+	           
+	            orderRepository.save(order);
+
+	            paymentResponse.setRazorpayAmount(order.getRazorpayAmount());
+	            paymentResponse.setWalletAmount(reqWalletAmount);
+	            paymentResponse.setOrderDetails(orderDetails);
+	            paymentResponse.setOrders(order);
+	            paymentResponse.setSuccessMsg("Razorpay Success and Wallet Paid!!");
+	        } else {
+	            throw new ApplicationException(HttpStatus.BAD_REQUEST, 1004, LocalDateTime.now(), "Insufficient wallet balance");
+	        }
+	    }
+	    // 5. Invalid or missing payment information
+	    else {
+	        throw new ApplicationException(HttpStatus.BAD_REQUEST, 1002, LocalDateTime.now(), "Invalid payment information");
+	    }
+
+	    return paymentResponse;
 	}
+
+	
 
 }
 
