@@ -14,7 +14,8 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 	
-	private final long expirationTime = 120;
+	//private final long expirationTime = 120;
+	private final long expirationTime = 86_400_000;
 
 	private static final String SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
 
@@ -37,11 +38,16 @@ public class JwtUtil {
 	                .compact();
 	    }
 
+	   public String refreshToken(String token) {
+		    Claims claims = getClaimsFromToken(token);
+		    String username = claims.getSubject();
+		    return createToken(username);
+		}
+	   
 	  
 	public Key getSignKey() {
 		byte[] keyBytes = Decoders.BASE64.decode(SECRET);
 		return Keys.hmacShaKeyFor(keyBytes);
 	}
-	
 
 }
