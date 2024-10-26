@@ -142,9 +142,9 @@ public class PaymentService {
 	        if (userDetails.isPresent()) {
 	            Optional<Orders> orders = orderRepository.findById(oid);
 	            if (orders.isPresent()) {
-	            	orders.get().setRazorpayAmount(razorpayAmount);
+	            	//orders.get().setTotalAmount(razorpayAmount);
 	            	
-	            	orderRepository.save(orders.get());
+	            //	  orderRepository.save(orders.get());
 	              //  razorPayOrder = createRazorPayOrder(String.valueOf(orders.get().getTotalAmount()));
 	            	 razorPayOrder = createRazorPayOrder(String.valueOf(razorpayAmount));
 	       
@@ -202,7 +202,7 @@ public class PaymentService {
 		return Integer.toString(amt);
 	}
 
-	public OrderSummary isPaymentSuccess(RazorpayPayment razorpayPayment) {
+	public OrderSummary isPaymentSuccess(RazorpayPayment razorpayPayment,double razorpayAmount) {
 		try {
 			Optional<Orders> orders = orderRepository.findById(razorpayPayment.getOrders().getId());
 			RazorPayDetails razorPayDetails = razorPayDetailsRepository
@@ -214,8 +214,8 @@ public class PaymentService {
 				// update payment status and generate order Id
 				Orders order = orderService.updatePaymentStatus(orders.get(), true);
 
-			
-				
+				order.setRazorpayAmount(razorpayAmount);
+				  
 				
 				razorPayDetails.setOrders(order);
 
@@ -498,6 +498,13 @@ public class PaymentService {
 	            throw new ApplicationException(HttpStatus.BAD_REQUEST, 1004, LocalDateTime.now(), "Insufficient wallet balance");
 	        }
 	    }
+	    
+	    else if(reqRazorpayAmount > 0 && "PAY_SUCCESS".equals(walletRequest.getRazorPaymentStatus())) {
+	    	order.setRazorpayAmount(reqRazorpayAmount);
+	    	orderRepository.save(order);
+	    	
+	    }
+	    
 	    // 5. Invalid or missing payment information
 	    else {
 	        throw new ApplicationException(HttpStatus.BAD_REQUEST, 1002, LocalDateTime.now(), "Invalid payment information");

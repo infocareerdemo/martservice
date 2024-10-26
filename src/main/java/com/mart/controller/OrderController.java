@@ -149,6 +149,12 @@ public class OrderController {
 	}
 
 
+	@GetMapping("/getWalletDetailsById")
+	public ResponseEntity<Object> getWalletDetailsById(@RequestParam Long userId) throws Exception {
+		return new ResponseEntity<Object>(orderService.getWalletDetailsById(userId), HttpStatus.OK);
+	}
+	
+	
 
 
 }

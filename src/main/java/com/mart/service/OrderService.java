@@ -711,7 +711,7 @@ public class OrderService {
         Sheet sheet = workbook.createSheet("User Order Report");
 
         Row headerRow = sheet.createRow(0);
-        String[] headers = {"S.no", "Order Date", "Employee Code", "Order ID", "Total Amount", "Cash", "Wallet", "Razorpay", "Product Name", "Quantity", "Price"};
+        String[] headers = {"S.no", "Order Date", "Employee Code","Name", "Order ID", "Total Amount", "Cash", "Wallet", "Razorpay", "Product Name", "Quantity", "Price"};
 
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
@@ -738,18 +738,19 @@ public class OrderService {
                     dateCell.setCellStyle(createDateCellStyle(workbook)); 
 
                     row.createCell(2).setCellValue(order.getUserDetail().getEmployeeCode());
-                    row.createCell(3).setCellValue(order.getOrderId());
-                    row.createCell(4).setCellValue(order.getTotalAmount());
-                    row.createCell(5).setCellValue(order.getCashAmount());
-                    row.createCell(6).setCellValue(order.getWalletAmount());
-                    row.createCell(7).setCellValue(order.getRazorpayAmount());
+                    row.createCell(3).setCellValue(order.getUserDetail().getName());
+                    row.createCell(4).setCellValue(order.getOrderId());
+                    row.createCell(5).setCellValue(order.getTotalAmount());
+                    row.createCell(6).setCellValue(order.getCashAmount());
+                    row.createCell(7).setCellValue(order.getWalletAmount());
+                    row.createCell(8).setCellValue(order.getRazorpayAmount());
 
                     isFirstProduct = false; 
                 }
 
-                row.createCell(8).setCellValue(orderDetail.getProducts().getProductName()); 
-                row.createCell(9).setCellValue(orderDetail.getQuantity());                  
-                row.createCell(10).setCellValue(orderDetail.getUnitPrice());                
+                row.createCell(9).setCellValue(orderDetail.getProducts().getProductName()); 
+                row.createCell(10).setCellValue(orderDetail.getQuantity());                  
+                row.createCell(11).setCellValue(orderDetail.getUnitPrice());                
             }
         }
 
@@ -778,6 +779,25 @@ public class OrderService {
         CreationHelper creationHelper = workbook.getCreationHelper();
         dateStyle.setDataFormat(creationHelper.createDataFormat().getFormat("yyyy-mm-dd")); 
         return dateStyle;
+    }
+
+
+    public List<Orders> getWalletDetailsById(Long userId) throws ApplicationException {
+        if (userId == null) {
+            throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Id Not Found");
+        }
+
+        List<Orders> result = new ArrayList<>();
+
+        // Fetch successful orders with wallet amount only
+        List<Orders> walletOnlyOrders = orderRepository.findSuccessfulOrdersWithWalletOnly(userId);
+        result.addAll(walletOnlyOrders);
+
+        // Fetch successful orders with both wallet and Razorpay amount
+        List<Orders> walletAndRazorpayOrders = orderRepository.findSuccessfulOrdersWithWalletAndRazorpay(userId);
+        result.addAll(walletAndRazorpayOrders);
+
+        return result;
     }
 
 

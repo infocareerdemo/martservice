@@ -29,8 +29,8 @@ public class PaymentController {
 	}
 	
 	@PostMapping("/checkStatus")
-	public ResponseEntity<Object> checkPaymentStatus(@RequestBody RazorpayPayment razorpayPayment) {
-		return new ResponseEntity<Object>(paymentService.isPaymentSuccess(razorpayPayment), HttpStatus.OK);
+	public ResponseEntity<Object> checkPaymentStatus(@RequestBody RazorpayPayment razorpayPayment,@RequestParam double razorpayAmount) {
+		return new ResponseEntity<Object>(paymentService.isPaymentSuccess(razorpayPayment,razorpayAmount), HttpStatus.OK);
 	}
 	
 	@PostMapping("/payByWallet")
