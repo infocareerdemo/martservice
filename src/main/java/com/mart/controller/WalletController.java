@@ -3,7 +3,6 @@ package com.mart.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,20 +21,7 @@ public class WalletController {
 	
 	@Autowired
 	WalletService walletService;
-	
-	 
-	 @GetMapping("/getWalletDetailsByUserId")
-		public ResponseEntity<Object> getWalletDetailsByUserId(@RequestParam Long id) throws ApplicationException {
-			return new ResponseEntity<Object>(walletService.getWalletDetailsByUserId(id), HttpStatus.OK);
-		}
 
-	 
-	
-	/*@PostMapping("/payByWallett")
-	public ResponseEntity<Object> payByWallett(@RequestParam Long id ,@RequestParam double amount) throws Exception {
-		return new ResponseEntity<Object>(walletService.payByWallett(id, amount), HttpStatus.OK);
-	}*/
-	
 	
 	@PostMapping("/payByWallet")
 	public ResponseEntity<Object> payByWallet(@RequestBody WalletRequest walletRequest) throws Exception {

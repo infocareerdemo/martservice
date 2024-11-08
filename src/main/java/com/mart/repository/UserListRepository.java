@@ -1,6 +1,5 @@
 package com.mart.repository;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,5 +13,6 @@ public interface UserListRepository extends JpaRepository<UserList, Long>{
 
 	List<UserList> findByFutureDateTimeLessThanEqual(LocalDateTime now);
 
+    List<UserList> findByUpdatedCurrentDateTimeBetween(LocalDateTime startOfDay, LocalDateTime endOfDay);
 
 }

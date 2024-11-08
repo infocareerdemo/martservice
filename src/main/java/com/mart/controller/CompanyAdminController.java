@@ -2,7 +2,6 @@ package com.mart.controller;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,12 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mart.dto.OrderStatusDto;
 import com.mart.dto.UserDetailDto;
 import com.mart.entity.UserList;
 import com.mart.service.CompanyAdminService;
 
-import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/v1/companyadmin")
@@ -33,33 +30,31 @@ public class CompanyAdminController {
 
 	@Autowired
 	CompanyAdminService  companyAdminService;
+
 	
-	/*@PostMapping("/addWallet")
-	public ResponseEntity<Object> addWallet(@RequestBody List<UserList> userList, @RequestParam  LocalDateTime futureDate) throws Exception{		
-		return new ResponseEntity<Object>(companyAdminService.addWallet(userList,futureDate), HttpStatus.OK);
-		
-	}*/
-	
+	// update wallet
 	@PostMapping("/addWallet")
-	public ResponseEntity<Object> addWalletUpdated(@RequestBody List<UserList> userList) throws Exception{		
-		return new ResponseEntity<Object>(companyAdminService.addWalletUpdated(userList), HttpStatus.OK);
+	public ResponseEntity<Object> addWalletUpdated(@RequestBody List<UserList> userList, @RequestParam LocalDateTime futureDate ) throws Exception{		
+		return new ResponseEntity<Object>(companyAdminService.addWalletUpdated(userList,futureDate), HttpStatus.OK);
 		
 	}
 	
 	
+	// get all userlist 
 	@GetMapping("/getAllUserList")
 	public ResponseEntity<Object> getAllUserList() throws Exception{		
 		return new ResponseEntity<Object>(companyAdminService.getAllUserList(), HttpStatus.OK);
 		
 	}
 	
+	//Verify the company admin and send otp for update wallet amount to users
 	@GetMapping("/verifyCmpnyAdminAndSendOtp")
 	public ResponseEntity<Object> verifyCmpnyAdminAndSendOtp(@RequestParam Long userId) throws Exception{		
 		return new ResponseEntity<Object>(companyAdminService.verifyCmpnyAdminAndSendOtp(userId), HttpStatus.OK);
 		
 	}
 	
-	
+	// Verify company admin otp
 	@GetMapping("/verifyOtp")
 	public ResponseEntity<Object> verifyOtp(@RequestParam Long userId, @RequestParam Long reqOtp) throws Exception{		
 		return new ResponseEntity<Object>(companyAdminService.verifyCmpnyAdminAndSendOtp(userId,reqOtp), HttpStatus.OK);
@@ -67,32 +62,35 @@ public class CompanyAdminController {
 	}
 	
 
-
+    // Set user activate and de-activated
 	@PostMapping("/userActivateAndDeactivate")
 	public ResponseEntity<Object> userActivateAndDeactivate(@RequestBody UserDetailDto userDetailDto) throws Exception{		
 		return new ResponseEntity<Object>(companyAdminService.userActivateAndDeactivate(userDetailDto), HttpStatus.OK);
 		
 	}
 	
-
+     // Add single user by company admin
 	@PostMapping("/addNewUser")
 	public ResponseEntity<Object> addNewUser(@RequestBody UserDetailDto userDetailDto) throws Exception{		
 		return new ResponseEntity<Object>(companyAdminService.addNewUser(userDetailDto), HttpStatus.OK);
 		
 	}
 	
+	// Update the user by  company admin
 	@PostMapping("/updateUser")
 	public ResponseEntity<Object> updateUser(@RequestBody UserDetailDto userDetailDto) throws Exception{		
 		return new ResponseEntity<Object>(companyAdminService.updateUser(userDetailDto), HttpStatus.OK);
 		
 	}
 	
+	//Update the wallet for single user
 	@PostMapping("/updateWalletToOneUser")
-	public ResponseEntity<Object> updateWalletToOneUser(@RequestBody UserDetailDto userDetailDto) throws Exception{		
-		return new ResponseEntity<Object>(companyAdminService.updateWalletToOneUser(userDetailDto), HttpStatus.OK);
+	public ResponseEntity<Object> updateWalletToOneUser(@RequestBody UserList userList,@RequestParam LocalDateTime futureDate) throws Exception{		
+		return new ResponseEntity<Object>(companyAdminService.updateWalletToOneUser(userList,futureDate), HttpStatus.OK);
 		
 	}
 	
+	//Get User details by userId
 	@GetMapping("/getUserDetailsById")
 	public ResponseEntity<Object> getUserDetailsById(@RequestParam  Long userId) throws Exception{		
 		return new ResponseEntity<Object>(companyAdminService.getUserDetailsById(userId), HttpStatus.OK);
@@ -100,9 +98,10 @@ public class CompanyAdminController {
 	}
 	
 
-	  @PostMapping("/saveMultipleUser")
-	    public ResponseEntity<Object> saveMultipleUser(@RequestBody List<UserDetailDto> userList) {
-	        List<UserDetailDto> duplicateUsers;
+	//Save Multiple user
+	@PostMapping("/saveMultipleUser")
+	public ResponseEntity<Object> saveMultipleUser(@RequestBody List<UserDetailDto> userList) {
+	     List<UserDetailDto> duplicateUsers;
 
 	        try {
 	            duplicateUsers = companyAdminService.saveMultipleUser(userList);
@@ -118,6 +117,8 @@ public class CompanyAdminController {
 	    }
 	
 	
+	
+	// Get Wallet details by userId
 	@GetMapping("/getWalletDetails")
 	public ResponseEntity<Object> getWalletDetails(@RequestParam Long userId) throws Exception{		
 		return new ResponseEntity<Object>(companyAdminService.getWalletDetails(userId), HttpStatus.OK);
@@ -125,6 +126,7 @@ public class CompanyAdminController {
 	}
 	
 	
+	// Download Multiple user excel template
 	@PostMapping("/downloadMultipleUserExcel")
     public ResponseEntity<InputStreamResource> downloadMultipleUserExcel() throws IOException {
         ByteArrayInputStream excelFile = companyAdminService.generateEmptyExcelWithHeaders();
@@ -139,8 +141,9 @@ public class CompanyAdminController {
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(new InputStreamResource(excelFile));
     }
+	
     
-    
+	// Download Wallet excel template
 	@PostMapping("/downloadWalletUploadExcel")
 	public ResponseEntity<InputStreamResource> downloadWalletUploadExcel() throws IOException {
 	    ByteArrayInputStream excelFile = companyAdminService.generateEmptyExcelForWalletWithHeaders();
@@ -155,6 +158,22 @@ public class CompanyAdminController {
 	            .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
 	            .body(new InputStreamResource(excelFile));
 	}
+	
+	
+    // Download Wallet details report for specific date
+    @PostMapping("/downloadWalletDetailsReport")
+    public ResponseEntity<InputStreamResource> downloadWalletDetailsReport(
+    		   @RequestParam(required = false) LocalDate currentDate) throws IOException {
 
+        ByteArrayInputStream excelFile = companyAdminService.generateWalletDetailsReport(currentDate);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=wallet_details_report.xlsx");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(new InputStreamResource(excelFile));
+    }
 
 }

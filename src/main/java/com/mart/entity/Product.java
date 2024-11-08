@@ -1,16 +1,12 @@
 package com.mart.entity;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -37,7 +33,7 @@ public class Product {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "product_id") // Specify the column name for the primary key
+	@Column(name = "product_id") 
 	private Long productId;
 
 	@NotBlank(message = "Name is mandatory")
@@ -63,7 +59,6 @@ public class Product {
 	
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "prodcut_location", referencedColumnName = "location_id", nullable = false)
-	//@JsonIgnore
 	private Location location;
 	
 	@Column(name = "product_image")
@@ -112,7 +107,7 @@ public class Product {
                 ", productPrice=" + productPrice +
                 ", productGST=" + productGST +
                 ", productActive=" + productActive +
-                ", location=" + location + // Exclude lazy-loaded fields like categories
+                ", location=" + location + 
                 ", updatedDate=" + updatedDate +
                 ", productUpdatedBy=" + productUpdatedBy +
                 '}';

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mart.entity.Cart;
-import com.mart.entity.Location;
 import com.mart.service.CartService;
 
 @RestController
@@ -21,13 +20,15 @@ public class CartController {
 	@Autowired
 	CartService cartService;
 	
+	
+	// Add products to cart
 	@PostMapping("/addProductByCart")
 	public ResponseEntity<Object> addProductByCart(@RequestBody Cart cartReq)throws Exception{
 		return new ResponseEntity<Object>(cartService.addProductByCart(cartReq), HttpStatus.OK);
 		
 	}
 	
-	
+	//Get all Products by userId
 	@GetMapping("/getAllProductsByUserId")
 	public ResponseEntity<Object> getAllProductsByUserId(@RequestParam Long userId)throws Exception{
 		return new ResponseEntity<Object>(cartService.getAllProductsByUserId(userId), HttpStatus.OK);

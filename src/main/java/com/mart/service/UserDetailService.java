@@ -6,7 +6,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 
 import com.mart.dto.LoginDto;
 import com.mart.dto.UserDetailDto;
@@ -19,8 +18,6 @@ import com.mart.repository.UserDetailRepository;
 import com.mart.util.CryptoUtils;
 import com.mart.util.FunUtils;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Service
@@ -42,93 +39,6 @@ public class UserDetailService {
 	@Autowired
 	CryptoUtils cryptoUtils;
 	
-	
-	  public UserDetail  verifyLoginUserDetail(LoginDto loginDto) throws ApplicationException
-	  {
-		  
-        UserDetail userDetail = userDetailRepository.findByUserName(loginDto.getUsername());
-	        
-	        if (userDetail != null && userDetail.getUserName()==loginDto.getUsername() && userDetail.getPhoneOtp()==loginDto.getPhoneOTP()) {
-	        	
-		        return userDetail;
-
-	        	       
-	        } 
-	        else
-	        {
-	 	            throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "Invalid credentials");
-	        }
-	  
-	    }
-	  
-	  
-	  public Boolean verifyUserName(LoginDto loginDto)
-	  {
-		  
-        UserDetail userDetail = userDetailRepository.findByUserName(loginDto.getUsername());
-	        
-	        if (userDetail != null) {
-	        	
-	        	return true;
-	        	            
-	        } 
-	        else
-	        {
-	        	return false;
-	        }
-	  
-	        
-	    }
-
-	 
-
-	  public String generatePhoneOtp(Long phone, Long id) throws ApplicationException {
-			
-	  		FunUtils funUtils = new FunUtils();
-			int otp = funUtils.generateOtp();
-			
-			Optional<UserDetail> userDetail = userDetailRepository.findById(id);
-			
-			
-			if(userDetail!=null)
-			{
-				userDetail.get().setPhoneOtp(otp);
-				userDetail.get().setUpdatedDateTime(LocalDateTime.now());
-				
-				smsNotificationService.sendOtpToMobile(phone, (long) otp);
-				userDetailRepository.save(userDetail.get());
-				
-				return String.valueOf(otp);
-									
-			}
-		    else
-	        {
-	            throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "Please try again");
-	        }
-	}
-
-
-	/*public boolean  verifyUsernameAndGenerateOtp(LoginDto loginDto, HttpServletResponse response) throws Exception{
-		FunUtils funUtils = new FunUtils();
-		int otp = funUtils.generateOtp();
-		
-	  UserDetail userDetails = userDetailRepository.findByUserName(loginDto.getUsername());
-	   if(userDetails !=null) {
-		   Long phone = userDetails.getPhone();
-
-		   userDetails.setPhoneOtp(otp);
-		   userDetails.setUpdatedDateTime(LocalDateTime.now());
-		   
-		   smsNotificationService.sendOtpToMobile(phone, (long) otp);
-		   userDetailRepository.save(userDetails);
-		  
-	   }else {
-           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "User Not Found");
-
-	   }
-		
-		return true;
-	}*/
 
 	public boolean verifyEmployeeCodeAndGenerateOtp(LoginDto loginDto,
 			HttpServletResponse response) throws ApplicationException{
@@ -144,6 +54,9 @@ public class UserDetailService {
 			   userDetails.setPhoneOtp(otp);
 			   userDetails.setUpdatedDateTime(LocalDateTime.now());
 			   
+		        userDetails.setPhoneOtpExpiry(LocalDateTime.now().plusMinutes(3));
+
+			   
 			   smsNotificationService.sendOtpToMobile(phone, (long) otp);
 			   userDetailRepository.save(userDetails);
 		}else {
@@ -151,49 +64,36 @@ public class UserDetailService {
 		}
 		return true;
 	}	
-	  
 	
 
-	public UserDetail verifyLoginCredentiall(LoginDto loginDto, HttpServletResponse response) throws Exception{		
-	 UserDetail userDetail = userDetailRepository.findByEmployeeCode(loginDto.getEmployeeCode());
-	    if(userDetail !=null) {	    	
-	         if(userDetail.getPhoneOtp() == loginDto.getPhoneOTP()) {	        	 
-	         }else {
-		            throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "Invalid Credentials");
-	         }	    	
-	    	
-	    }else {
-	        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "User Not Found");
+	public UserDetail verifyLoginCredential(LoginDto loginDto, HttpServletResponse response) throws Exception {		
+	    UserDetail userDetail = userDetailRepository.findByEmployeeCode(loginDto.getEmployeeCode());
+	    
+	    if (userDetail != null) {
+	        if (userDetail.isUserActive()) {
+	            
+	            if (userDetail.getPhoneOtp() == loginDto.getPhoneOTP()) {
+	                
+	                if (userDetail.getPhoneOtpExpiry() != null && LocalDateTime.now().isBefore(userDetail.getPhoneOtpExpiry())) {
+	                   
+	                	return userDetail;
+	                } else {
+	                    throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1002, LocalDateTime.now(), "OTP has expired");
+	                }
+	                
+	            } else {
+	                throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "Invalid OTP");
+	            }
+	            
+	        } else {
+	            throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1003, LocalDateTime.now(), "User is deactivated");
+	        }
+	        
+	    } else {
+	        throw new ApplicationException(HttpStatus.NOT_FOUND, 1004, LocalDateTime.now(), "User not found");
 	    }
-		return userDetail;
 	}
 
-	public UserDetail verifyLoginCredential(LoginDto loginDto, HttpServletResponse response) throws Exception{		
-		 UserDetail userDetail = userDetailRepository.findByEmployeeCode(loginDto.getEmployeeCode());
-		    if(userDetail !=null) {
-		    	
-		    	  if(userDetail.isUserActive() == true) {
-		    		  
-		    		  if(userDetail.getPhoneOtp() == loginDto.getPhoneOTP()) {	        	 
-		 	         }else {
-		 		            throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "Invalid Credentials");
-		 	         }	
-		    		  
-		    	  }else {
-	 		            throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1001, LocalDateTime.now(), "User is Deactivated");
-
-		    	  }
-		    	
-		    }else{
-		        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "User Not Found");
-
-		    }
-		 
-		 
-			return userDetail;
-		}
-	
-	
 
 	public UserDetailDto getUserDetailsById(Long userId, HttpServletResponse response)throws ApplicationException {
 		 if(userId !=null) {

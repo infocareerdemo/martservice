@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mart.dto.PaymentRequest;
 import com.mart.dto.WalletRequest;
 import com.mart.entity.RazorpayPayment;
 import com.mart.exception.ApplicationException;
@@ -39,17 +38,3 @@ public class PaymentController {
 	}
 	
 }
-
-
-/*@PostMapping("/createOrder")
-public ResponseEntity<Object> createOrder(@RequestParam Long id, @RequestParam Long oid) throws ApplicationException {
-	return new ResponseEntity<Object>(paymentService.createOrder(id, oid), HttpStatus.OK);
-}*/
-
-
-
-
-/*@PostMapping("/payAmount")
-public ResponseEntity<Object> payWalletAndCash(@RequestParam Long userId, @RequestParam Long orderId, @RequestBody PaymentRequest paymentRequest) throws ApplicationException {
-	return new ResponseEntity<Object>(paymentService.payAmount(userId,orderId,paymentRequest), HttpStatus.OK);
-}*/

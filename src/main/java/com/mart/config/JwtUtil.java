@@ -14,13 +14,14 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 	
-	//private final long expirationTime = 120;
-	private final long expirationTime = 86_400_000;
+	private final long expirationTime = 30;
 
 	private static final String SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
 
-	public Claims getClaimsFromToken(String token){
-        return Jwts.parser().setSigningKey(JwtUtil.SECRET).parseClaimsJws(token).getBody();	
+	public Claims getClaimsFromToken(String token)
+	{
+		return Jwts.parser().setSigningKey(JwtUtil.SECRET).parseClaimsJws(token).getBody();	
+		
 	}
 	
 	public boolean isTokenExpired(String token) {
@@ -29,25 +30,20 @@ public class JwtUtil {
 		return expiration.before(new Date());
 	}
 	
-	   public String createToken(String username) {
-	        return Jwts.builder()
-	                .setSubject(username) 
-	                .setIssuedAt(new Date(System.currentTimeMillis())) 
-	                .setExpiration(new Date(System.currentTimeMillis() + expirationTime * 60000)) 
-	                .signWith(getSignKey(), SignatureAlgorithm.HS256) 
-	                .compact();
-	    }
+	public String createToken(Claims claims) {
+		return Jwts.builder().setClaims(claims).setIssuedAt(new Date(System.currentTimeMillis()))
+				.setExpiration(new Date(System.currentTimeMillis() + expirationTime * 60000))
+				.signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
+	}
 
-	   public String refreshToken(String token) {
-		    Claims claims = getClaimsFromToken(token);
-		    String username = claims.getSubject();
-		    return createToken(username);
-		}
-	   
-	  
+	
+	// generate tocken using the based64 with secret 
 	public Key getSignKey() {
 		byte[] keyBytes = Decoders.BASE64.decode(SECRET);
 		return Keys.hmacShaKeyFor(keyBytes);
 	}
+	
+
+
 
 }

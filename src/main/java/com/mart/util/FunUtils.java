@@ -12,12 +12,6 @@ public class FunUtils {
 		return Integer.parseInt(String.format("%06d", otp));
 	}	
 	
-	
-	
-	
-	
-	
-	
-	
+		
 	
 }

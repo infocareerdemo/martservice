@@ -1,6 +1,5 @@
 package com.mart.repository;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -25,8 +24,6 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
 	List<Orders> findByOrderedDateTimeBetweenAndLocationLocationId(LocalDateTime startOfDay, LocalDateTime endOfDay,
 			Long locationId);
 
-	/*List<Orders> findByOrderedDateTimeAndPaymentStatus(LocalDateTime startDateTime, LocalDateTime endDateTime,
-			String paymentStatus);*/
 	
    // Query to find the startdate and enddate orders with the details
     @Query(value = "SELECT * FROM Orders WHERE ordered_date_time >= :startDateTime AND ordered_date_time < :endDateTime AND payment_status = :paymentStatus", nativeQuery = true)

@@ -17,7 +17,7 @@ public class Location {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "location_id") // Specify the column name for the primary key
+	@Column(name = "location_id") 
 	private Long locationId;
 	
 	@Column(name = "location_name", nullable = false)
@@ -26,7 +26,7 @@ public class Location {
 	@Column(name = "company_name" ,  nullable = false)
 	private String companyName;
 	
-	@Column(name = "qr_code", length = 1000) // Increase the length as needed
+	@Column(name = "qr_code", length = 1000) 
 	private String qrCode;
 	
 	@Column(name = "last_updated_by",  nullable = false)

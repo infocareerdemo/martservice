@@ -1,7 +1,5 @@
 package com.mart.controller;
 
-import java.util.HashMap;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -18,10 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mart.config.JwtUtil;
 import com.mart.dto.LoginDto;
 import com.mart.entity.UserDetail;
-import com.mart.exception.ApplicationException;
 import com.mart.service.UserDetailService;
 
-import jakarta.servlet.http.HttpServletRequest;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletResponse;
 
 
@@ -37,61 +35,27 @@ public class UserController {
 	JwtUtil jwtUtil;
 	
 
-	
-	@PostMapping("/verifyUserName")
-	public ResponseEntity<Object> verifyUserName(@RequestBody LoginDto loginDto, HttpServletResponse response) throws ApplicationException {
-
-		Boolean isValidateUserName = userDetailService.verifyUserName(loginDto);	
-		return new ResponseEntity<Object>(isValidateUserName, HttpStatus.OK);
-	}
-	
-	@PostMapping("/getotpToPhone")
-	public ResponseEntity<Object> generatePhoneOtp(@RequestBody LoginDto loginDto) throws ApplicationException {
-		return new ResponseEntity<Object>(userDetailService.generatePhoneOtp(loginDto.getPhone(), loginDto.getUserId()), HttpStatus.OK);
-	}
-	
-	
-	@PostMapping("/loginn")
-	public ResponseEntity<Object> loginn(@RequestBody LoginDto loginDto, HttpServletResponse response) throws Exception {
-	  
-		UserDetail userDetail = userDetailService.verifyLoginUserDetail(loginDto);	
-		
-		String token =  jwtUtil.createToken(userDetail.getUserName());
-		 
-		response.setHeader("Authorization", "Bearer " + token);    		
-	    HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
-      
-  	    loginDto.setUserId(userDetail.getUserId());
-	    loginDto.setEmailId(userDetail.getEmailId());
-	    loginDto.setRole(userDetail.getRole());
-	    loginDto.setPassword("");
-	    
-	    return new ResponseEntity<>(loginDto, headers,HttpStatus.OK);
-	}
-	
-
-
-
-	
-	/*@PostMapping("/verifyUsernameAndGenerateOtp")
-	public ResponseEntity<Object> verifyUsernameAndGenerateOtp(@RequestBody LoginDto loginDto, HttpServletResponse response) throws Exception{		
-		return new ResponseEntity<Object>(userDetailService.verifyUsernameAndGenerateOtp(loginDto, response), HttpStatus.OK);
-		
-	}*/
+	//Check employee code and send otp to phone
 	@PostMapping("/verifyEmployeeCodeAndGenerateOtp")
 	public ResponseEntity<Object> verifyEmployeeCodeAndGenerateOtp(@RequestBody LoginDto loginDto, HttpServletResponse response) throws Exception{		
 		return new ResponseEntity<Object>(userDetailService.verifyEmployeeCodeAndGenerateOtp(loginDto, response), HttpStatus.OK);
 		
-	}
+	}	
 	
 	
 	
-
+   //User login 
 	@PostMapping("/login")
 	public ResponseEntity<Object> login(@RequestBody LoginDto loginDto, HttpServletResponse response) throws Exception{		
 		UserDetail userDetail = userDetailService.verifyLoginCredential(loginDto,response);	
-		String token =  jwtUtil.createToken(userDetail.getUserName());
+		//String token =  jwtUtil.createToken(userDetail.getEmployeeCode());
+		
+		Claims claims = Jwts.claims().setSubject(String.valueOf(userDetail.getUserId()));
+		claims.put("id", userDetail.getEmployeeCode());
+		claims.put("role", userDetail.getRole().getRoleName());		
+		claims.put("phone", userDetail.getPhone());
+		String token = jwtUtil.createToken(claims);
+		
 		 
 		response.setHeader("Authorization", "Bearer " + token);    		
 	    HttpHeaders headers = new HttpHeaders();
@@ -110,6 +74,7 @@ public class UserController {
 	}
 	
 	
+	// Get the user details by userId
 	@GetMapping("/getUserDetailsById")
 	public ResponseEntity<Object> getUserDetailsById(@RequestParam Long userId, HttpServletResponse response) throws Exception{		
 		return new ResponseEntity<Object>(userDetailService.getUserDetailsById(userId, response), HttpStatus.OK);
@@ -118,10 +83,17 @@ public class UserController {
 	
 	
 	
+	// Admin login 
 	@PostMapping("/adminLogin")
 	public ResponseEntity<Object> adminLogin(@RequestBody LoginDto loginDto, HttpServletResponse response) throws Exception{		
 		UserDetail userDetail = userDetailService.verifyAdminLoginCredential(loginDto,response);	
-		String token =  jwtUtil.createToken(userDetail.getUserName());
+		//String token =  jwtUtil.createToken(userDetail.getEmployeeCode());
+		
+		Claims claims = Jwts.claims().setSubject(String.valueOf(userDetail.getUserId()));
+		claims.put("id", userDetail.getEmployeeCode());
+		claims.put("role", userDetail.getRole().getRoleName());
+		claims.put("phone", userDetail.getPhone());
+		String token = jwtUtil.createToken(claims);
 		 
 		response.setHeader("Authorization", "Bearer " + token);    		
 	    HttpHeaders headers = new HttpHeaders();
@@ -133,52 +105,10 @@ public class UserController {
 	    loginDto.setPassword("");
 	    loginDto.setUsername(userDetail.getUserName());
 	    loginDto.setLocation(userDetail.getLocation());
-	    
-        
+	          
 	    return new ResponseEntity<>(loginDto, headers,HttpStatus.OK);
 		
 	}
-	
-	
-	
-	
-	@PostMapping("/userLogin")
-	public ResponseEntity<Object> loginn(@RequestBody Map<String, Object> loginParams, HttpServletResponse response) throws Exception {
-	    String employeeCode = (String) loginParams.get("employeeCode");    
-	    String phoneOtpString = (String) loginParams.get("phoneOTP");
-	    Long phoneOTP = null;
-
-	    if (phoneOtpString != null) {
-	        try {
-	            phoneOTP = Long.valueOf(phoneOtpString); 
-	        } catch (NumberFormatException e) {
-	            return new ResponseEntity<>("Invalid phone OTP format", HttpStatus.BAD_REQUEST);
-	        }
-	    } else {
-	        return new ResponseEntity<>("Phone OTP is required", HttpStatus.BAD_REQUEST);
-	    }
-
-	    UserDetail userDetail = userDetailService.verifyLoginUserDetail(employeeCode, phoneOTP);
-	    if (userDetail == null) {
-	        return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
-	    }
-
-	    String token = jwtUtil.createToken(userDetail.getUserName());
-	    response.setHeader("Authorization", "Bearer " + token);
-
-	    HttpHeaders headers = new HttpHeaders();
-	    headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
-
-	    Map<String, Object> responseMap = new HashMap<>();
-	    responseMap.put("userId", userDetail.getUserId());
-	    responseMap.put("username", userDetail.getUserName());
-	    responseMap.put("emailId", userDetail.getEmailId());
-	    responseMap.put("role", userDetail.getRole());
-	    responseMap.put("employeeCode", userDetail.getEmployeeCode());
-
-	    return new ResponseEntity<>(responseMap, headers, HttpStatus.OK);
-	}
-
 	
 	
 	

@@ -7,17 +7,14 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
+@EnableScheduling 
 public class MartserviceApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(MartserviceApplication.class, args);
 	}
 
-	
-	
-	@Bean
-	public RestTemplate restTemplate() {
-		return new RestTemplate();
-	}
+
+
 
 }

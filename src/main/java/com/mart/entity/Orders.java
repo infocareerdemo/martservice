@@ -15,16 +15,14 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "orders") // Specify the table name
+@Table(name = "orders") 
 public class Orders {
 
-	// it just id, not used in any table reference
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "Id") // Specify the column name for the primary key
+	@Column(name = "Id") 
 	private Long id;
 	
-	// order_id refer to order_details_it
 	@Column(name = "order_id", unique = true)
 	private String orderId;
 	
@@ -51,7 +49,6 @@ public class Orders {
 	@Column(name = "payment_status")
 	private String paymentStatus;
 	
-	// user_login column of orders refere to id column of user_login table
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "ordered_user",referencedColumnName = "user_id", nullable = false)
 	private UserDetail userDetail;

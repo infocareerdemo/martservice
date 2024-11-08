@@ -1,7 +1,6 @@
 package com.mart.dto;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 import com.mart.entity.Location;

@@ -1,17 +1,11 @@
 package com.mart.dto;
 
 
-import java.util.List;
 
-import org.springframework.security.core.userdetails.UserDetails;
 
 import com.mart.entity.Location;
 import com.mart.entity.Role;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.Data;
 
 @Data

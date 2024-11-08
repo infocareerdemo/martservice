@@ -121,7 +121,7 @@ public class ProductService {
 
 	
 
-	public Product getFoodItemsById(Long id) {
+	public Product getProductsById(Long id) {
 		Optional<Product> product = productRepository.findById(id);
 		if (product.isPresent()) {
 			return product.get();

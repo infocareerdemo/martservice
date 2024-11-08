@@ -20,13 +20,14 @@ public class LocationController {
 	LocationService locationService;
 	
 	
+	// Save or Update  Location
 	@PostMapping("/saveOrupdateLocation")
 	public ResponseEntity<Object> saveOrupdateLocation(@RequestBody Location locationReq)throws Exception{
 		return new ResponseEntity<Object>(locationService.saveOrupdateLocation(locationReq), HttpStatus.OK);
 		
 	}
 	
-	
+	//Get All Location
 	@GetMapping("/getAllLocation")
 	public ResponseEntity<Object> getAllLocation() {
 		return new ResponseEntity<Object>(locationService.getAllLocation(), HttpStatus.OK);

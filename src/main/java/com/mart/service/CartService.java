@@ -5,14 +5,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.CollectionUtils;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 
 import com.mart.entity.Cart;
-import com.mart.entity.Location;
 import com.mart.entity.Product;
 import com.mart.entity.UserDetail;
 import com.mart.exception.ApplicationException;
@@ -20,7 +17,6 @@ import com.mart.repository.CartRepository;
 import com.mart.repository.ProductRepository;
 import com.mart.repository.UserDetailRepository;
 
-import jakarta.transaction.Transactional;
 
 @Service
 public class CartService {

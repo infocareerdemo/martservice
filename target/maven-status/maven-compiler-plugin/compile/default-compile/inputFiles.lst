@@ -1,8 +1,10 @@
+D:\Projects\Mart\martservice\src\main\java\com\mart\cmdlinerunner\Initializer.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\config\CustomInterceptor.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\config\GeneralConstant.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\config\JwtAuthentication.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\config\JwtUtil.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\config\SecurityConfig.java
+D:\Projects\Mart\martservice\src\main\java\com\mart\config\WebMvcConfigurer.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\controller\CartController.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\controller\CategoryController.java
 D:\Projects\Mart\martservice\src\main\java\com\mart\controller\CompanyAdminController.java

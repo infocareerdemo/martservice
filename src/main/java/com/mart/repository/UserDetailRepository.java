@@ -1,6 +1,5 @@
 package com.mart.repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,8 +30,6 @@ public interface UserDetailRepository extends JpaRepository<UserDetail, Long>{
     	                                               @Param("emailId") String emailId);
 
 
-//	UserDetail findByPhone(Long phone);
-	
-	//Optional<UserDetail> findById(Long userId);
+
 	
 }

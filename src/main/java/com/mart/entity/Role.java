@@ -10,13 +10,13 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "roles") // Specify the table name
+@Table(name = "roles") 
 public class Role {
 
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "role_id") // Specify the column name for the primary key
+	@Column(name = "role_id") 
 	private Long roleId; 
 	
 	@Column(name = "role_name", nullable = false)

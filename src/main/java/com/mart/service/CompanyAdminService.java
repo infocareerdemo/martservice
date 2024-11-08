@@ -5,28 +5,29 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 
 import com.mart.dto.UserDetailDto;
 import com.mart.entity.Location;
-import com.mart.entity.Role;
 import com.mart.entity.UserDetail;
 import com.mart.entity.UserList;
 import com.mart.exception.ApplicationException;
@@ -59,11 +60,95 @@ public class CompanyAdminService {
 		@Autowired
 		LocationRepository locationRepository;
 		
+	    @Value("${scheduler.cron.expression}")
+	    private String cronExpression;
 
-		public List<UserList>  getAllUserListt() throws ApplicationException{			
-			List<UserList>  userList = 	userListRepository.findAll();
-			  return userList;
-		}
+	    // Use the cron expression from the application properties
+	    @Scheduled(cron = "#{@schedulerCronExpression}")
+	    public void updateWalletAmountForFutureDates() {
+	        LocalDateTime now = LocalDateTime.now();
+
+	        List<UserList> userList = userListRepository.findByFutureDateTimeLessThanEqual(now);
+
+	        for (UserList user : userList) {
+	            Optional<UserDetail> existingUserOpt = userDetailRepository
+	                    .findByEmployeeCodeAndPhone(user.getEmployeeCode(), user.getPhone());
+
+	            if (existingUserOpt.isPresent()) {
+	                UserDetail userDetail = existingUserOpt.get();
+	                userDetail.setWalletAmount(user.getWalletAmount());
+
+	                userDetailRepository.save(userDetail);
+
+	                System.out.println("Updated wallet for user with EmployeeCode: " + user.getEmployeeCode());
+	            } else {
+	                System.err.println("User with EmployeeCode: " + user.getEmployeeCode() + " not found");
+	            }
+	        }
+	    }
+	    
+		
+		 
+		// Scheduler to update wallet amounts for users when futureDateTime is reached
+	    //  @Scheduled(cron = "0 * * * * ?") // Runs every minute to check if any user has reached their futureDateTime
+		 // @Scheduled(cron = "0 0 1 * * ?") // Runs every day at 1:00 AM
+		 // @Scheduled(cron = "0 */5 * * * ?") // Runs every 5 minutes  to check if any user has reached their futureDateTime
+		  //@Scheduled(cron = "0 * * * * ?") // Runs every minute to check if any user has reached their futureDateTime
+		 /* public void updateWalletAmountForFutureDates() {
+		      LocalDateTime now = LocalDateTime.now();
+		      
+		      List<UserList> userList = userListRepository.findByFutureDateTimeLessThanEqual(now);
+
+		      for (UserList user : userList) {
+		          Optional<UserDetail> existingUserOpt = userDetailRepository
+		                  .findByEmployeeCodeAndPhone(user.getEmployeeCode(), user.getPhone());
+
+		          if (existingUserOpt.isPresent()) {
+		              UserDetail userDetail = existingUserOpt.get();
+		              userDetail.setWalletAmount(user.getWalletAmount());
+
+		              userDetailRepository.save(userDetail);
+
+		              System.out.println("Updated wallet for user with EmployeeCode: " + user.getEmployeeCode());
+		          } else {
+		              System.err.println("User with EmployeeCode: " + user.getEmployeeCode() + " not found");
+		          }
+		      }
+		  }*/
+		  
+		  
+		
+		 public List<UserList> addWalletUpdated(List<UserList> userList, LocalDateTime futureDate) throws ApplicationException {
+			    if (userList != null && !userList.isEmpty()) {
+			        for (UserList user : userList) {
+			            Optional<UserDetail> existingUser = userDetailRepository
+			                    .findByEmployeeCodeAndPhone(user.getEmployeeCode(), user.getPhone());
+
+			            if (existingUser.isPresent()) {
+			                UserDetail userDetail = existingUser.get();
+			                
+			                UserList newUserList = new UserList();
+			                newUserList.setEmployeeCode(user.getEmployeeCode());
+			                newUserList.setPhone(user.getPhone());
+			                newUserList.setWalletAmount(user.getWalletAmount());  
+			                
+			                newUserList.setFutureDateTime(futureDate); 
+			                newUserList.setUpdatedCurrentDateTime(LocalDateTime.now());
+
+			                userListRepository.save(newUserList);
+
+			            } else {
+			                throw new ApplicationException(HttpStatus.NOT_FOUND, 1002, LocalDateTime.now(), 
+			                                               "User with EmployeeCode: " + user.getEmployeeCode() + " not found");
+			            }
+			        }
+			        return userList;  
+			    } else {
+			        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Users data Not Found");
+			    }
+			}
+		 
+		 
 		
 		public List<UserDetail>  getAllUserList() throws ApplicationException{			
 			List<UserDetail>  userList = 	userDetailRepository.findAll();
@@ -85,6 +170,7 @@ public class CompanyAdminService {
 					
 					userDetail.get().setPhoneOtp(otp);
 					userDetail.get().setUpdatedDateTime(LocalDateTime.now());
+					userDetail.get().setPhoneOtpExpiry(LocalDateTime.now().plusMinutes(3));
 					   
 					   smsNotificationService.sendOtpToMobile(phone, (long) otp);
 					   userDetailRepository.save(userDetail.get());
@@ -107,7 +193,11 @@ public class CompanyAdminService {
 			Optional<UserDetail> userDetail =	userDetailRepository.findById(userId);
                 if(userDetail !=null) {
                 	   if(userDetail.get().getPhoneOtp() == reqOtp) {
-                		   return true;
+       	                      if (userDetail.get().getPhoneOtpExpiry() != null && LocalDateTime.now().isBefore(userDetail.get().getPhoneOtpExpiry())) {
+       	                         return true;
+       	                         } else {
+       	                    throw new ApplicationException(HttpStatus.UNAUTHORIZED, 1002, LocalDateTime.now(), "OTP has expired");
+       	                }
                 	   }else {
                 		   return false;
                 	   }
@@ -127,9 +217,7 @@ public class CompanyAdminService {
 			  
                   if(userDetail !=null) {
 				  userDetail.setUserActive(userDetailDto.isUserActive());
-				  userDetailRepository.save(userDetail);
-				  
-			
+				  userDetailRepository.save(userDetail);			
 				  
 				  userDetailsDto.setUserName(userDetail.getUserName());
 				  userDetailsDto.setPhoneNo(userDetail.getPhone());
@@ -157,7 +245,6 @@ public class CompanyAdminService {
 		            UserDetail userDetail = new UserDetail();
 		            userDetail.setEmployeeCode(userDetailDto.getEmployeeCode());
 		            userDetail.setName(userDetailDto.getName());
-		            userDetail.setUserName(userDetailDto.getUserName());
 		            userDetail.setPhone(userDetailDto.getPhoneNo());
 		            userDetail.setEmailId(userDetailDto.getEmailId());
 		            userDetail.setRole(userDetailDto.getRole());
@@ -169,9 +256,7 @@ public class CompanyAdminService {
 
 		            UserDetail savedUserDetail = userDetailRepository.save(userDetail);
 
-		            userDetailsDto.setUserName(savedUserDetail.getUserName());
 		            userDetailsDto.setPhoneNo(savedUserDetail.getPhone());
-		            userDetailsDto.setUserName(savedUserDetail.getUserName());
 		            userDetailsDto.setName(savedUserDetail.getName());
 		            userDetailsDto.setEmailId(savedUserDetail.getEmailId());
 		            userDetailsDto.setRole(savedUserDetail.getRole());
@@ -197,6 +282,79 @@ public class CompanyAdminService {
 
 		
 		
+		
+
+		public UserDetailDto updateUser(UserDetailDto userDetailDto) throws ApplicationException{
+			 UserDetailDto userDetailsDto = new UserDetailDto();
+			if(userDetailDto.getUserId() !=null) {
+				Optional<UserDetail> userDetails =	userDetailRepository.findById(userDetailDto.getUserId());
+                   if(userDetails !=null) {
+                	   UserDetail userDetail =	userDetails.get();
+                	   userDetail.setName(userDetailDto.getName());
+                	   userDetail.setEmailId(userDetailDto.getEmailId());
+                	   userDetail.setPhone(userDetailDto.getPhoneNo());
+                	   userDetailRepository.save(userDetail);
+                	   
+
+                	  userDetailsDto.setUserId(userDetail.getUserId());
+ 					  userDetailsDto.setPhoneNo(userDetail.getPhone());
+ 					  userDetailsDto.setName(userDetail.getName());
+ 					  userDetailsDto.setEmailId(userDetail.getEmailId());
+ 					  userDetailsDto.setRole(userDetail.getRole());
+ 					  userDetailsDto.setLocation(userDetail.getLocation());
+ 					  userDetailsDto.setAddress(userDetail.getAddress());
+ 					  userDetailsDto.setEmployeeCode(userDetail.getEmployeeCode());
+ 					  userDetailsDto.setUserActive(userDetail.isUserActive());
+                	   
+                   }else {
+    		           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "user Not Found");
+
+                   }
+				
+			}else {
+		           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "id Not Found");
+
+			}
+			
+			return userDetailsDto;
+		}
+		
+		
+		public String updateWalletToOneUser(UserList userList, LocalDateTime futureDate) throws ApplicationException{
+				 
+				 if(userList.getEmployeeCode()  !=null) {
+					 
+					    Optional<UserDetail> existingUser = userDetailRepository
+			                    .findByEmployeeCodeAndPhone(userList.getEmployeeCode(), userList.getPhone());
+
+			            if (existingUser.isPresent()) {
+			                UserDetail userDetail = existingUser.get();
+			                
+			                UserList newUserList = new UserList();
+			                newUserList.setEmployeeCode(userList.getEmployeeCode());
+			                newUserList.setPhone(userList.getPhone());
+			                newUserList.setWalletAmount(userList.getWalletAmount());  
+			                
+			                newUserList.setFutureDateTime(futureDate); 
+			                newUserList.setUpdatedCurrentDateTime(LocalDateTime.now());
+
+			                userListRepository.save(newUserList);
+					 
+					 
+				 }else {
+			           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "User Not Found");
+
+				 }
+			 }else {
+		           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "data Not Found");
+
+			 }
+			
+	    	
+		   return "Wallet updated Succesfully";
+		
+		}
+		
 
 		public UserDetailDto getUserDetailsById(Long userId) throws ApplicationException {
 			  UserDetailDto userDetailsDto = new UserDetailDto();
@@ -209,9 +367,8 @@ public class CompanyAdminService {
 					UserDetail userDetail =	userDetails.get();
 					
 					  userDetailsDto.setUserId(userDetails.get().getUserId());
-					  userDetailsDto.setUserName(userDetail.getName());
 					  userDetailsDto.setPhoneNo(userDetail.getPhone());
-					  userDetailsDto.setUserName(userDetail.getUserName());
+					  userDetailsDto.setName(userDetail.getName());
 					  userDetailsDto.setEmailId(userDetail.getEmailId());
 					  userDetailsDto.setRole(userDetail.getRole());
 					  userDetailsDto.setAddress(userDetail.getAddress());
@@ -233,135 +390,6 @@ public class CompanyAdminService {
 		
 		
 
-		public UserDetailDto updateUser(UserDetailDto userDetailDto) throws ApplicationException{
-			 UserDetailDto userDetailsDto = new UserDetailDto();
-			if(userDetailDto.getUserId() !=null) {
-				Optional<UserDetail> userDetails =	userDetailRepository.findById(userDetailDto.getUserId());
-                   if(userDetails !=null) {
-                	   UserDetail userDetail =	userDetails.get();
-                	   userDetail.setName(userDetailDto.getName());
-                	   userDetail.setUserName(userDetailDto.getName());
-                	   userDetail.setEmailId(userDetailDto.getEmailId());
-                	   userDetail.setPhone(userDetailDto.getPhoneNo());
-                	   userDetailRepository.save(userDetail);
-                	   
-
- 					  userDetailsDto.setUserName(userDetail.getUserName());
- 					  userDetailsDto.setPhoneNo(userDetail.getPhone());
- 					  userDetailsDto.setName(userDetail.getName());
- 					  userDetailsDto.setEmailId(userDetail.getEmailId());
- 					  userDetailsDto.setRole(userDetail.getRole());
- 					  userDetailsDto.setAddress(userDetail.getAddress());
- 					  userDetailsDto.setEmployeeCode(userDetail.getEmployeeCode());
- 					  userDetailsDto.setUserActive(userDetail.isUserActive());
-                	   
-                   }else {
-    		           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "user Not Found");
-
-                   }
-				
-			}else {
-		           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "id Not Found");
-
-			}
-			
-			return userDetailsDto;
-		}
-		
-		
-		public UserDetailDto updateWalletToOneUser(UserDetailDto userDetailDto) throws ApplicationException{
-			 UserDetailDto userDetailsDto = new UserDetailDto();
-
-			if(userDetailDto.getUserId() != null) {
-				if(userDetailDto.getWalletAmount() > 0) {
-				Optional<UserDetail> userDetail  =	userDetailRepository.findById(userDetailDto.getUserId());
-					 if(userDetail != null) {
-						 userDetail.get().setWalletAmount(userDetailDto.getWalletAmount());
-						 userDetailRepository.save(userDetail.get());
-						 
-						  userDetailsDto.setUserName(userDetail.get().getUserName());
-	 					  userDetailsDto.setPhoneNo(userDetail.get().getPhone());
-	 					  userDetailsDto.setEmailId(userDetail.get().getEmailId());
-	 					  userDetailsDto.setRole(userDetail.get().getRole());
-	 					  userDetailsDto.setEmployeeCode(userDetail.get().getEmployeeCode());
-	 					  userDetailsDto.setUserActive(userDetail.get().isUserActive());
-						 
-					 }else {
-				           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "User Not Found");
-
-					 }
-				}else {
-			           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Wallet Amount not Found");
-
-				}
-			}else {
-		           throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Id Not Found");
-
-			}
-		
-			return userDetailsDto;
-		}
-
-	
-		
-		
-	
-		public List<UserDetailDto> saveMultipleUserr(List<UserDetailDto> userDetailListDto) throws ApplicationException {
-		    List<UserDetailDto> userDetailsDtoList = new ArrayList<>();
-
-		    if (userDetailListDto != null && !userDetailListDto.isEmpty()) {
-		        for (UserDetailDto user : userDetailListDto) {
-
-		            Optional<UserDetail> existingUser = userDetailRepository.findByEmployeeCodeAndPhone(user.getEmployeeCode(), user.getPhoneNo());
-		            if (existingUser.isPresent()) {
-		                System.out.println("User with EmployeeCode: " + user.getEmployeeCode() + " and Phone: " + user.getPhoneNo() + " already exists.");
-		                continue; 
-		            }
-
-		            UserDetail userDetail = new UserDetail();
-		            userDetail.setEmployeeCode(user.getEmployeeCode());
-		            userDetail.setUserName(user.getUserName());
-		            userDetail.setPhone(user.getPhoneNo());
-		            userDetail.setEmailId(user.getEmailId());
-		            userDetail.setUserActive(true);
-
-		            Optional<Role> optionalRole = roleRepository.findById(2L);
-		            if (optionalRole.isPresent()) {
-		                userDetail.setRole(optionalRole.get());
-		            } else {
-		                throw new ApplicationException(HttpStatus.NOT_FOUND, 1002, LocalDateTime.now(), "Role not found for ID: 2");
-		            }
-
-		            Optional<Location> optionalLocation = locationRepository.findById(1L);
-		            if (optionalLocation.isPresent()) {
-		                userDetail.setLocation(optionalLocation.get());
-		            } else {
-		                throw new ApplicationException(HttpStatus.NOT_FOUND, 1003, LocalDateTime.now(), "Location not found for ID: 1");
-		            }
-
-		            UserDetail savedUserDetail = userDetailRepository.save(userDetail);
-
-		            UserDetailDto userDetailsDto = new UserDetailDto();
-		            userDetailsDto.setUserName(savedUserDetail.getUserName());
-		            userDetailsDto.setPhoneNo(savedUserDetail.getPhone());
-		            userDetailsDto.setUserName(savedUserDetail.getName());
-		            userDetailsDto.setEmailId(savedUserDetail.getEmailId());
-		            userDetailsDto.setRole(savedUserDetail.getRole());
-		            userDetailsDto.setAddress(savedUserDetail.getAddress());
-		            userDetailsDto.setEmployeeCode(savedUserDetail.getEmployeeCode());
-		            userDetailsDto.setUserActive(savedUserDetail.isUserActive());
-		            userDetailsDto.setLocation(savedUserDetail.getLocation());
-
-		            userDetailsDtoList.add(userDetailsDto);
-		        }
-		    } else {
-		        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Users data Not Found");
-		    }
-
-		    return userDetailsDtoList;
-		}
-
-
 		
 		
 		
@@ -370,122 +398,42 @@ public class CompanyAdminService {
 		public List<UserDetailDto> saveMultipleUser(List<UserDetailDto> userDetailDtos) {
 		    List<UserDetailDto> duplicateUsers = new ArrayList<>();
 
-		    // Check for duplicates
 		    for (UserDetailDto userDto : userDetailDtos) {
 		        boolean isDuplicate = userDetailRepository.existsByEmployeeCodeOrPhoneNoOrEmailId(
 		                userDto.getEmployeeCode(), userDto.getPhoneNo(), userDto.getEmailId());
 
 		        if (isDuplicate) {
-		            // If duplicate, add to the duplicate user list
+		        	
 		            duplicateUsers.add(userDto);
 		        }
 		    }
 
-		    // If there are any duplicates, return the list of duplicates without saving
 		    if (!duplicateUsers.isEmpty()) {
-		        return duplicateUsers; // Return duplicates
+		        return duplicateUsers; 
 		    }
 
-		    // If no duplicates, save new users
 		    for (UserDetailDto userDto : userDetailDtos) {
 		        UserDetail newUser = new UserDetail();
-		        newUser.setUserName(userDto.getUserName());
+		        newUser.setName(userDto.getName());
 		        newUser.setPassWord(userDto.getPassWord());
 		        newUser.setEmailId(userDto.getEmailId());
 		        newUser.setPhone(userDto.getPhoneNo());
 		        newUser.setAddress(userDto.getAddress());
 		        newUser.setEmployeeCode(userDto.getEmployeeCode());
-		        newUser.setUserActive(true);
-		        
-		        Optional<Role> role = roleRepository.findById(2L);
-		        newUser.setRole(role.get());
+		        newUser.setRole(userDto.getRole());
+		        newUser.setUserActive(true);		     
 		        
 		        Optional<Location> location = locationRepository.findById(1L);
 		        newUser.setLocation(location.get());
 
 
-		        // Save the new user in UserDetails repository
 		        userDetailRepository.save(newUser);
-
-		        /* Uncomment this if you want to save in UserList repository
-		        UserList userListEntry = new UserList();
-		        userListEntry.setUserId(newUser.getUserId());
-		        userListEntry.setEmail(newUser.getEmailId());
-		        userListEntry.setName(newUser.getUserName());
-		        userListEntry.setEmployeeCode(newUser.getEmployeeCode());
-
-		        // Save the new user in UserList repository
-		        userListRepository.save(userListEntry);
-		        */
+		        
 		    }
 
-		    return new ArrayList<>(); // Return an empty list if no duplicates found
+		    return new ArrayList<>(); 
 		}
-
-		  
-		    
-
-			/*public List<UserList> addWallet(List<UserList> userList, LocalDateTime futureDate) throws ApplicationException {
-			    if (userList != null && !userList.isEmpty()) {
-			        for (UserList user : userList) {
-			            Optional<UserDetail> existingUser = userDetailRepository
-			                   .findByEmployeeCodeAndPhone(user.getEmployeeCode(), user.getPhone());
-			            
-			            System.out.println("Exis:"+existingUser.get().getEmployeeCode() );
-			            System.out.println("Exis:"+existingUser.get().getPhone() );
-			            
-			            if (existingUser.isPresent()) {
-			            			            	
-			                LocalDateTime uploadFutureDate = futureDate;
-			                UserDetail userDetail = existingUser.get();
-			                userDetail.setWalletAmount(user.getWalletAmount());
-			                userDetailRepository.save(userDetail);
-			                
-	
-			            } else {
-			                
-			                continue;
-			            }
-			        }
-
-			        userListRepository.saveAll(userList);
-			    } else {
-			        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Users data Not Found");
-			    }
-			    return userList;
-			}*/
-		
-		
-		 public List<UserList> addWalletUpdated(List<UserList> userList) throws ApplicationException {
-			    if (userList != null && !userList.isEmpty()) {
-			        for (UserList user : userList) {
-			            Optional<UserDetail> existingUser = userDetailRepository
-			                    .findByEmployeeCodeAndPhone(user.getEmployeeCode(), user.getPhone());
-
-			            if (existingUser.isPresent()) {
-			                UserDetail userDetail = existingUser.get();
-			                
-			                UserList newUserList = new UserList();
-			                newUserList.setEmployeeCode(user.getEmployeeCode());
-			                newUserList.setPhone(user.getPhone());
-			                newUserList.setWalletAmount(user.getWalletAmount());  
-			                
-			                newUserList.setFutureDateTime(user.getFutureDateTime()); 
-			                newUserList.setUpdatedCurrentDateTime(LocalDateTime.now());
-
-			                userListRepository.save(newUserList);
-
-			            } else {
-			                throw new ApplicationException(HttpStatus.NOT_FOUND, 1002, LocalDateTime.now(), 
-			                                               "User with EmployeeCode: " + user.getEmployeeCode() + " not found");
-			            }
-			        }
-			        return userList;  
-			    } else {
-			        throw new ApplicationException(HttpStatus.NOT_FOUND, 1001, LocalDateTime.now(), "Users data Not Found");
-			    }
-			}
-		 
+				
 
 			
 			
@@ -513,7 +461,7 @@ public class CompanyAdminService {
 
 
 			  public ByteArrayInputStream generateEmptyExcelWithHeaders() throws IOException {
-			        String[] columns = {"S.no", "employeeCode", "phone", "userName", "email"};
+			        String[] columns = {"S.no", "employeeCode", "phone", "name", "email"};
 
 			        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 			            Sheet sheet = workbook.createSheet("Employee Data");
@@ -556,36 +504,76 @@ public class CompanyAdminService {
 			        }
 			    }
 		
-			// Scheduler to update wallet amounts for users when futureDateTime is reached
-		   //  @Scheduled(cron = "0 * * * * ?") // Runs every minute to check if any user has reached their futureDateTime
-			  @Scheduled(cron = "0 0 1 * * ?") // Runs every day at 1:00 AM
-			  public void updateWalletAmountForFutureDates() {
-			      LocalDateTime now = LocalDateTime.now();
-			      
-			      // Find records where futureDateTime is less than or equal to current time
-			      List<UserList> userList = userListRepository.findByFutureDateTimeLessThanEqual(now);
+			  
+			
+			  
+			  
 
-			      for (UserList user : userList) {
-			          // Fetch the corresponding UserDetail using employeeCode and phone
-			          Optional<UserDetail> existingUserOpt = userDetailRepository
-			                  .findByEmployeeCodeAndPhone(user.getEmployeeCode(), user.getPhone());
 
-			          if (existingUserOpt.isPresent()) {
-			              // Update the wallet amount
-			              UserDetail userDetail = existingUserOpt.get();
-			              userDetail.setWalletAmount(user.getWalletAmount());
+public ByteArrayInputStream generateWalletDetailsReport(LocalDate currentDate) throws IOException {
+    LocalDateTime startOfDay = currentDate.atStartOfDay();
+    LocalDateTime endOfDay = currentDate.atTime(LocalTime.MAX);
 
-			              // Save the updated UserDetail back to the repository
-			              userDetailRepository.save(userDetail);
+    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    String formattedDate = currentDate.format(dateFormatter);
 
-			              // Optionally log or perform additional actions
-			              System.out.println("Updated wallet for user with EmployeeCode: " + user.getEmployeeCode());
-			          } else {
-			              System.err.println("User with EmployeeCode: " + user.getEmployeeCode() + " not found");
-			          }
-			      }
-			  }
+    List<UserList> userList = userListRepository.findByUpdatedCurrentDateTimeBetween(startOfDay, endOfDay);
 
+    try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+        Sheet sheet = workbook.createSheet("Wallet Details");
+
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerFont.setFontHeightInPoints((short) 12); 
+        CellStyle headerCellStyle = workbook.createCellStyle();
+        headerCellStyle.setFont(headerFont);
+
+        Row dateRow = sheet.createRow(0);
+        Cell dateCell = dateRow.createCell(0);
+        dateCell.setCellValue("Date : " + formattedDate); 
+
+        CellStyle dateCellStyle = workbook.createCellStyle();
+        Font dateFont = workbook.createFont();
+        dateFont.setBold(true);
+        dateFont.setFontHeightInPoints((short) 14); 
+        dateCellStyle.setFont(dateFont);
+        dateCell.setCellStyle(dateCellStyle);
+
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 5));
+
+        String[] headers = {"S.No", "Employee Code", "Name", "Opening Balance", "Utilization", "Closing Balance"};
+        Row headerRow = sheet.createRow(1);
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerCellStyle);
+        }
+
+        int rowIdx = 2; 
+        for (int i = 0; i < userList.size(); i++) {
+            UserList user = userList.get(i);
+            UserDetail userDetails = userDetailRepository.findByEmployeeCode(user.getEmployeeCode());
+
+            double openingBalance = user.getWalletAmount(); 
+            double pendingBalance = userDetails.getWalletAmount(); 
+            double utilization = openingBalance - pendingBalance; 
+
+            Row row = sheet.createRow(rowIdx++);
+            row.createCell(0).setCellValue(i + 1); 
+            row.createCell(1).setCellValue(user.getEmployeeCode()); 
+            row.createCell(2).setCellValue(userDetails.getName()); 
+            row.createCell(3).setCellValue(openingBalance); 
+            row.createCell(4).setCellValue(utilization); 
+            row.createCell(5).setCellValue(pendingBalance); 
+        }
+
+        workbook.write(out);
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+    
+}
 		
 			            
 }
+
+

@@ -159,7 +159,7 @@
 
 	<build>
 	
-	<finalName> kcs </finalName>
+	<finalName> mart </finalName>
 	
 		<plugins>
 			<plugin>

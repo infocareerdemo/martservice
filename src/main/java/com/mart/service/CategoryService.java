@@ -2,7 +2,6 @@ package com.mart.service;
 
 import com.mart.dto.CategoryRequestDto;
 import com.mart.dto.CategoryResponseDto;
-import com.mart.dto.ProductResponseDto;
 import com.mart.entity.Category;
 import com.mart.entity.Product;
 import com.mart.exception.ApplicationException;
@@ -11,19 +10,15 @@ import com.mart.repository.ProductRepository;
 
 import jakarta.transaction.Transactional;
 
-import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -412,66 +407,4 @@ public String updateCategoryProducts(Long categoryId, List<CategoryResponseDto.P
     }
 }
 
-
-
-
 }
-
-
-/*public Object saveOrUpdateCategoryy(CategoryRequestDto categoryRequestDto, MultipartFile categoryImage) throws Exception{
-	if(categoryRequestDto.getCategoryId() !=null) {
-		
-		 Optional<Category> existingCategory	= categoryRepository.findById(categoryRequestDto.getCategoryId());
-		   if (existingCategory.isPresent()) {
-			   
-				    existingCategory.get().setCategoryName(categoryRequestDto.getCategoryName());
-
-			        if (categoryImage != null && !categoryImage.isEmpty()) {
-			        	 existingCategory.get().setCategoryImage(categoryImage.getBytes()); 
-			        }
-		        	
-			        Set<Product> products = new HashSet<>();
-			        for (Long productId : categoryRequestDto.getProductIds()) {
-			            productRepository.findById(productId).ifPresent(products::add);
-			        }
-			        existingCategory.get().setProducts(products);
-
-			        for (Product product : products) {
-			            product.getCategories().add(existingCategory.get());
-			        }
-
-			        categoryRepository.save(existingCategory.get());
-				   
-			
-	        	
-	        	
-		        return "Category Updated";
-
-	        }else {
-	        	 throw new ApplicationException(HttpStatus.CONFLICT, 1001, LocalDateTime.now(), 
-		                    "Category name already exists with the same name");
-	        }
-		
-	}else {
-		
-		
-		 Category  categorye =   categoryRepository.findByCategoryName(categoryRequestDto.getCategoryName());
-		   if(categorye !=null) {
-			   throw new ApplicationException(HttpStatus.CONFLICT, 1001, LocalDateTime.now(), 
-	                    "Category name already exists with the same name");
-		   }else {
-			    Category category = new Category();
-		        category.setCategoryName(categoryRequestDto.getCategoryName());
-
-		        if (categoryImage != null && !categoryImage.isEmpty()) {
-		            category.setCategoryImage(categoryImage.getBytes()); 
-		        }
-
-		        categoryRepository.save(category);
-			   
-		   }
-		   
-	        return "Category Saved";
-	}
-	
-}*/
